@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 CAPEX Interactive Management Dashboard</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
@@ -17,26 +20,28 @@
 
     <div class="max-w-[1600px] mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         
+        <!-- DASHBOARD HEADER -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-6 mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 tracking-tight">2026 CAPEX WORKFLOW ENGINE</h1>
-                <p class="text-sm text-slate-500">Interactive Workspace — Edit, Progress Tracking, & Live Recalculations</p>
+                <p class="text-sm text-slate-500">Interactive Workspace — Row-Level Inline Action Updates & Live Analytics</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <button id="toggleEditBtn" onclick="toggleEditMode()" class="flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    <span>Enable Edit Mode</span>
+                <button onclick="addNewRow()" class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-all shadow-sm cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    <span>Add New Capex Row</span>
                 </button>
                 <button onclick="exportJSONData()" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium border border-slate-200 rounded-lg transition-all shadow-xs cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Download Data
+                    Download JSON Data
                 </button>
-                <button onclick="resetFilters()" class="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-all shadow-xs" title="Reset Search">
+                <button onclick="resetFilters()" class="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-all shadow-xs" title="Reset Filters">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" /></svg>
                 </button>
             </div>
         </div>
 
+        <!-- FILTERS -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200/60">
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Quarter</label>
@@ -63,6 +68,7 @@
             </div>
         </div>
 
+        <!-- TOP METRICS GRID -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">CAPEX Project Registry</span>
@@ -120,6 +126,7 @@
             </div>
         </div>
 
+        <!-- CHARTS VISUAL DIAGRAMS -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs lg:col-span-2">
                 <div class="mb-3">
@@ -140,6 +147,7 @@
             </div>
         </div>
 
+        <!-- EDITABLE MASTER REGISTER TABLE -->
         <div class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
             <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
                 <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">CAPEX Interactive Ledger Grid</h3>
@@ -155,10 +163,12 @@
                             <th class="p-3 bg-slate-100 w-[180px]">Reference / PO</th>
                             <th class="p-3 bg-slate-100 text-right w-[150px]">Budget Amount</th>
                             <th class="p-3 bg-slate-100 text-center w-[160px]">Workflow Status</th>
+                            <th class="p-3 bg-slate-100 text-center w-[100px]">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="projectTableBody" class="divide-y divide-slate-100 text-slate-700">
-                        </tbody>
+                        <!-- Content dynamically rendered via JS -->
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -166,8 +176,8 @@
     </div>
 
     <script>
-        // Internal state tracker
-        let isEditMode = false;
+        // Set holding active row editing modes
+        let editingRowIds = new Set();
 
         // Source of Truth Data array
         let dataset = [
@@ -267,36 +277,60 @@
             });
         }
 
-        // Toggles interactive inputs on and off
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const btn = document.getElementById('toggleEditBtn');
-            if (isEditMode) {
-                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> <span>Save Updates</span>`;
-                btn.className = "flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-all shadow-sm cursor-pointer";
-            } else {
-                btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> <span>Enable Edit Mode</span>`;
-                btn.className = "flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm cursor-pointer";
-            }
-            applyFilters(); // Re-render table layout structure
+        // Inline Row Actions management functions
+        function startEditingRow(id) {
+            editingRowIds.add(id);
+            applyFilters(); // Re-render target row items layout 
         }
 
-        // Live updating data change handler
-        function handleFieldChange(id, field, value) {
-            const item = dataset.find(i => i.id === id);
-            if (!item) return;
+        function saveEditingRow(id) {
+            const tr = document.getElementById(`row-${id}`);
+            if (!tr) return;
 
-            if (field === 'budget') {
-                item.budget = parseFloat(value) || 0;
-            } else if (field === 'equipment_no') {
-                item.equipment_no = value.toUpperCase();
-                item.prefix = value.split('-')[0] || 'BH';
-            } else {
-                item[field] = value;
+            const targetItem = dataset.find(item => item.id === id);
+            if (targetItem) {
+                targetItem.quarter = tr.querySelector('.row-quarter').value;
+                const equipNum = tr.querySelector('.row-equip').value.toUpperCase();
+                targetItem.equipment_no = equipNum;
+                targetItem.prefix = equipNum.split('-')[0] || 'BH';
+                targetItem.activity = tr.querySelector('.row-activity').value;
+                targetItem.reference = tr.querySelector('.row-ref').value;
+                targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
+                targetItem.status = tr.querySelector('.row-status').value;
             }
 
-            // Real-time calculation engine update triggers
-            calculateAndRefreshMetrics();
+            editingRowIds.delete(id);
+            applyFilters(); // refresh system datasets
+        }
+
+        function cancelEditingRow(id) {
+            editingRowIds.delete(id);
+            applyFilters();
+        }
+
+        function deleteRow(id) {
+            if (confirm("Are you sure you want to remove this line item registry entry?")) {
+                dataset = dataset.filter(item => item.id !== id);
+                editingRowIds.delete(id);
+                applyFilters();
+            }
+        }
+
+        function addNewRow() {
+            const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => o.id)) + 1 : 1;
+            const newObj = {
+                id: nextId,
+                quarter: "First Quarter",
+                equipment_no: "BH-NEW",
+                activity: "Enter planned operation task details...",
+                reference: "",
+                budget: 0,
+                status: "Pending",
+                prefix: "BH"
+            };
+            dataset.unshift(newObj); // push to top 
+            editingRowIds.add(nextId); // immediately drop into inline modification view
+            applyFilters();
         }
 
         function applyFilters() {
@@ -316,7 +350,6 @@
         }
 
         function calculateAndRefreshMetrics() {
-            // Recalculate totals over the entire active state dataset
             const total = dataset.length;
             const done = dataset.filter(i => i.status === 'Done').length;
             const docs = dataset.filter(i => i.status === 'With Documents').length;
@@ -337,7 +370,6 @@
             document.getElementById('metricDocRate').innerText = docRate + '%';
             document.getElementById('barDocRate').style.width = docRate + '%';
 
-            // Chart Matrix Re-mapping
             const chartData = {
                 'First Quarter': { Done: 0, Docs: 0, Pending: 0 },
                 'Second Quarter': { Done: 0, Docs: 0, Pending: 0 },
@@ -348,13 +380,11 @@
             let bhBudget = 0, bdBudget = 0, crBudget = 0;
 
             dataset.forEach(item => {
-                // Timeline maps
                 if (chartData[item.quarter]) {
                     if (item.status === 'Done') chartData[item.quarter].Done++;
                     else if (item.status === 'With Documents') chartData[item.quarter].Docs++;
                     else chartData[item.quarter].Pending++;
                 }
-                // Financial maps
                 if (item.prefix === 'BH') bhBudget += item.budget;
                 else if (item.prefix === 'BD') bdBudget += item.budget;
                 else crBudget += item.budget;
@@ -376,19 +406,20 @@
             document.getElementById('tableRowCounter').innerText = `Showing ${data.length} items`;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 bg-slate-50 font-medium">No matching items records.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 bg-slate-50 font-medium">No matching items records.</td></tr>`;
                 return;
             }
 
             data.forEach(item => {
                 const row = document.createElement('tr');
+                row.id = `row-${item.id}`;
                 row.className = "hover:bg-slate-50/80 transition-colors";
 
-                if (isEditMode) {
-                    // Editable Inputs Form Factor Render
+                if (editingRowIds.has(item.id)) {
+                    // LOCAL EDIT ACTIVE STATE LAYOUT
                     row.innerHTML = `
                         <td class="p-2">
-                            <select onchange="handleFieldChange(${item.id}, 'quarter', this.value)" class="edit-input w-full p-1 text-xs rounded">
+                            <select class="row-quarter edit-input w-full p-1 text-xs rounded">
                                 <option value="First Quarter" ${item.quarter === 'First Quarter' ? 'selected':''}>Q1</option>
                                 <option value="Second Quarter" ${item.quarter === 'Second Quarter' ? 'selected':''}>Q2</option>
                                 <option value="Third Quarter" ${item.quarter === 'Third Quarter' ? 'selected':''}>Q3</option>
@@ -396,27 +427,37 @@
                             </select>
                         </td>
                         <td class="p-2">
-                            <input type="text" value="${item.equipment_no}" onchange="handleFieldChange(${item.id}, 'equipment_no', this.value)" class="edit-input w-full p-1 text-xs font-bold rounded uppercase">
+                            <input type="text" value="${item.equipment_no}" class="row-equip edit-input w-full p-1 text-xs font-bold rounded uppercase">
                         </td>
                         <td class="p-2">
-                            <input type="text" value="${item.activity}" onchange="handleFieldChange(${item.id}, 'activity', this.value)" class="edit-input w-full p-1 text-xs rounded">
+                            <input type="text" value="${item.activity}" class="row-activity edit-input w-full p-1 text-xs rounded">
                         </td>
                         <td class="p-2">
-                            <input type="text" value="${item.reference}" onchange="handleFieldChange(${item.id}, 'reference', this.value)" class="edit-input w-full p-1 text-xs font-mono rounded">
+                            <input type="text" value="${item.reference}" class="row-ref edit-input w-full p-1 text-xs font-mono rounded">
                         </td>
                         <td class="p-2">
-                            <input type="number" value="${item.budget}" onchange="handleFieldChange(${item.id}, 'budget', this.value)" class="edit-input w-full p-1 text-xs text-right font-semibold rounded">
+                            <input type="number" value="${item.budget}" class="row-budget edit-input w-full p-1 text-xs text-right font-semibold rounded">
                         </td>
                         <td class="p-2">
-                            <select onchange="handleFieldChange(${item.id}, 'status', this.value)" class="edit-input w-full p-1 text-xs rounded font-bold">
+                            <select class="row-status edit-input w-full p-1 text-xs rounded font-bold">
                                 <option value="Pending" ${item.status === 'Pending' ? 'selected':''}>Pending</option>
-                                <option value="With Documents" ${item.status === 'With Documents' ? 'selected':''}>With Documents</option>
+                                <option value="With Documents" ${item.status === 'With Documents' ? 'selected':''}>With Docs</option>
                                 <option value="Done" ${item.status === 'Done' ? 'selected':''}>Done</option>
                             </select>
                         </td>
+                        <td class="p-2 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="saveEditingRow(${item.id})" class="text-emerald-600 hover:text-emerald-800 p-1" title="Save Row Changes">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                </button>
+                                <button onclick="cancelEditingRow(${item.id})" class="text-slate-400 hover:text-slate-600 p-1" title="Cancel">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        </td>
                     `;
                 } else {
-                    // Static Executive View Form Factor Render
+                    // STATIC EXECUTIVE ROW VIEW WITH ACTIONS
                     let badgeStyle = "bg-amber-50 text-amber-700 border-amber-200";
                     if(item.status === 'Done') badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
                     if(item.status === 'With Documents') badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
@@ -432,6 +473,22 @@
                                 ${item.status}
                             </span>
                         </td>
+                        <td class="p-3">
+                            <div class="flex items-center justify-center gap-3 text-slate-400">
+                                <!-- Edit Icon matching image_c6fe0a.png -->
+                                <button onclick="startEditingRow(${item.id})" class="hover:text-slate-700 transition-colors p-1" title="Edit row item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <!-- Delete Icon matching image_c6fe0a.png -->
+                                <button onclick="deleteRow(${item.id})" class="hover:text-red-500 transition-colors p-1" title="Delete row item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
                     `;
                 }
                 tbody.appendChild(row);
@@ -445,12 +502,11 @@
             applyFilters();
         }
 
-        // Export data function
         function exportJSONData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataset, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "2026_CAPEX_UPDATED_REGISTRY.json");
+            downloadAnchor.setAttribute("download", "2026_CAPEX_INLINE_UPDATED.json");
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
