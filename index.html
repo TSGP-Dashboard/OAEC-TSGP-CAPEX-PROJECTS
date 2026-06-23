@@ -154,10 +154,9 @@
     </div>
 
     <script>
-        // 1. Paste your deployed Google Apps Script URL here:
-        const API_URL = "https://script.google.com/macros/s/AKfycbwbid08uZptKjHlKd5VxcFMkUwAswQjdoDkXteYCSxnn_3pxkTgMyPZ17U3dVqa41pPNQ/exec";
-        
-        // 2. CRITICAL: Make sure this exactly matches the text on your Google Sheet tab at the bottom (e.g., "Sheet1", "CAPEX Log", etc.)
+        // 1. Paste your deployed Google Apps Script URL here
+        const API_URL = "https://script.google.com/macros/s/AKfycbza5aknWQDAlNOoHGFEZpJhdM7UKjP5c-0fonhxmGDlFZCW94cf5OjrfukvvPEUuww9OQ/exec";
+        // 2. Tab name on your spreadsheet
         const SHEET_PATH = "Sheet1"; 
 
         let dataset = [];
@@ -170,22 +169,29 @@
             loadDatabaseFromAPI();
         });
 
-        // READ: Fetch rows from your custom App Script via query params
+        // READ: Fetch rows and forcefully sanitize the string formatting on currency values
         async function loadDatabaseFromAPI() {
             setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
             try {
                 const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
                 const result = await response.json();
                 
-                dataset = (result.data || result || []).map(item => ({
-                    id: parseInt(item.id) || 0,
-                    quarter: item.quarter || '',
-                    equipment_no: item.equipment_no || '',
-                    activity: item.activity || '',
-                    po_reference: item.po_reference || '—',
-                    budget: parseFloat(item.budget) || 0,
-                    status: item.status || 'Pending'
-                }));
+                dataset = (result.data || result || []).map(item => {
+                    let cleanedBudget = item.budget;
+                    if (typeof cleanedBudget === 'string') {
+                        cleanedBudget = cleanedBudget.replace(/[^0-9.]/g, ''); 
+                    }
+                    
+                    return {
+                        id: parseInt(item.id) || 0,
+                        quarter: item.quarter || '',
+                        equipment_no: item.equipment_no || '',
+                        activity: item.activity || '',
+                        po_reference: item.po_reference || '—',
+                        budget: parseFloat(cleanedBudget) || 0,
+                        status: item.status || 'Pending'
+                    };
+                });
                 
                 setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
                 applyFilters();
@@ -213,9 +219,9 @@
                     data: {
                         labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                         datasets: [
-                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 40 },
-                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 40 },
-                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 40 }
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 12 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 12 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 12 }
                         ]
                     },
                     options: {
@@ -388,7 +394,7 @@
         function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
         function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
         
-        // UPDATE & SAVE: Collects row fields and safely updates it to your live sheet
+        // SAVE & BROADCAST EDITS: Sends cleaned numbers directly up to your Apps Script trigger
         async function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
@@ -397,7 +403,7 @@
             const equipment_no = tr.querySelector('.row-equip').value;
             const activity = tr.querySelector('.row-activity').value;
             const po_reference = tr.querySelector('.row-po').value || '—';
-            const budget = parseFloat(tr.querySelector('.row-budget').value);
+            const budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
             const status = tr.querySelector('.row-status').value;
 
             setSyncStatus("Saving to Sheet...", "text-amber-400 bg-amber-500/10");
@@ -415,7 +421,6 @@
             });
 
             try {
-                // Sends the edited row back to your App Script deployment trigger
                 await fetch(`${API_URL}?${queryParams.toString()}`, { method: 'GET', mode: 'no-cors' });
                 
                 const targetItem = dataset.find(item => item.id === id);
@@ -429,11 +434,10 @@
             } catch (err) {
                 console.error(err);
                 setSyncStatus("Sync error", "text-red-400 bg-red-500/10");
-                alert("Failed to broadcast edits to cloud registry.");
             }
         }
 
-        // CREATE: Packages all structural parameters and pushes seamlessly to your script write action
+        // CREATE: Add new default structural records to your cloud sheet spreadsheet directly
         async function addNewRow() {
             setSyncStatus("Appending to Sheet...", "text-amber-400 bg-amber-500/10");
             
@@ -471,7 +475,6 @@
             } catch (err) {
                 console.error(err);
                 setSyncStatus("Insertion error", "text-red-400 bg-red-500/10");
-                alert("Failed to add new record.");
             }
         }
     </script>
