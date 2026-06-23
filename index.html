@@ -4,17 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 CAPEX Interactive Management Dashboard</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #131517; color: #f8fafc; }
         .edit-input { background: #22252a; border: 1px solid #3f444d; color: #f8fafc; font-weight: 500; padding: 2px 4px; }
         .edit-input:focus { outline: 2px solid #10b981; }
-        /* Custom scrollbar for database container to match theme */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1a1d21; }
         ::-webkit-scrollbar-thumb { background: #374151; rounded: 3px; }
@@ -25,15 +21,13 @@
 
     <div class="max-w-[1600px] mx-auto bg-[#1c1f22] p-4 rounded-xl border border-[#2d3139] shadow-xl">
         
-        <!-- DASHBOARD HEADER -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-[#2d3139] gap-3">
             <div>
                 <span class="text-[10px] font-bold text-[#10b981] tracking-wider uppercase bg-[#10b981]/10 px-2 py-0.5 rounded">CAPEX Log Operations</span>
                 <h1 class="text-xl font-bold text-white mt-1 tracking-tight">2026 OVERALL CAPEX PROJECTS</h1>
-                <p class="text-xs text-slate-400 mt-0.5">Heavy Equipment Major Component Repairs</p>
+                <p class="text-xs text-slate-400 mt-0.5">Heavy Equipment Asset Reconditioning Plan & Progress Hub</p>
             </div>
             
-            <!-- MASTER INTERACTIVE FILTERS -->
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                 <div class="relative w-full sm:w-56">
                     <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
@@ -50,8 +44,6 @@
                     <option value="BH">BH (Excavators)</option>
                     <option value="BD">BD (Dozers)</option>
                     <option value="CR">CR (Cranes)</option>
-                    <option value="RR">RR (Road Rollers)</option>
-                    <option value="RG">RG (Road Graders)</option>
                 </select>
                 <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
                     <span>+</span> Add Project
@@ -59,7 +51,6 @@
             </div>
         </div>
 
-        <!-- CORE PERFORMANCE METRICS ROW -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
             <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
@@ -93,7 +84,6 @@
             </div>
         </div>
 
-        <!-- CHARTS VISUALIZATION WORKSPACE -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
             <div class="lg:col-span-2 p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
                 <div class="mb-2">
@@ -113,13 +103,15 @@
             </div>
         </div>
 
-        <!-- COMPREHENSIVE LOG DETAILS WORKFLOW COMPONENT -->
         <div class="border border-[#2d3139] rounded-xl overflow-hidden bg-[#22252a] mt-4">
             <div class="p-3 border-b border-[#2d3139] flex justify-between items-center bg-[#1c1f22]">
                 <div>
-                    <h3 class="text-xs font-bold text-slate-200">MAJOR PROJECTS DATABASE REGISTRY</h3>
+                    <h3 class="text-xs font-bold text-slate-200">MASTER PROJECTS DATABASE REGISTRY</h3>
                 </div>
-                <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
+                <div class="flex items-center gap-2">
+                    <span id="syncIndicator" class="text-[10px] font-medium text-[#10b981] bg-[#10b981]/10 px-2 py-0.5 rounded">Connected to API</span>
+                    <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
+                </div>
             </div>
 
             <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
@@ -136,13 +128,14 @@
                         </tr>
                     </thead>
                     <tbody id="projectTableBody" class="text-xs divide-y divide-[#2d3139]">
-                        <!-- Content rendered dynamically -->
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-slate-400 font-medium">Loading live data fields from API...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- QUICK SUMMARY LEGEND BAR -->
         <div class="mt-3 flex flex-wrap gap-3 items-center justify-end px-1 text-[11px] font-medium text-slate-500">
             <div class="flex items-center gap-1">
                 <span class="w-2 h-2 rounded-full bg-[#10b981] inline-block"></span>
@@ -161,67 +154,50 @@
     </div>
 
     <script>
-        let dataset = [
-            {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "po_reference": "—", "budget": 0, "status": "Done"},
-            {"id": 2, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF UNDERCARRIAGE", "po_reference": "—", "budget": 0, "status": "Done"},
-            {"id": 3, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF UNDERCARRIAGE", "po_reference": "—", "budget": 0, "status": "Done"},
-            {"id": 4, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF POWERTRAIN (TRANSMISSION AND FINAL DRIVE)", "po_reference": "—", "budget": 0, "status": "Done"},
-            {"id": 5, "quarter": "Second Quarter", "equipment_no": "BD-16", "activity": "UNDERCARRIAGE CHANGE OUT", "po_reference": "Ref #5200388941", "budget": 0, "status": "With Documents"},
-            {"id": 6, "quarter": "Second Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE OUT", "po_reference": "Ref #5200388942", "budget": 0, "status": "With Documents"},
-            {"id": 7, "quarter": "Second Quarter", "equipment_no": "BD-14", "activity": "ENGINE TOP OVERHAUL", "po_reference": "Ref #5200387556", "budget": 0, "status": "With Documents"},
-            {"id": 8, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "UNDERCARRIAGE CHANGE OUT", "po_reference": "Ref #5200392331", "budget": 0, "status": "With Documents"},
-            {"id": 9, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "FINAL DRIVE CHANGE OUT", "po_reference": "Ref #5200392331", "budget": 0, "status": "With Documents"},
-            {"id": 10, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "Ref #5200390141", "budget": 700000, "status": "With Documents"},
-            {"id": 11, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "UNDECARRIAGE CHANGE-OUT", "po_reference": "Ref #5200391150", "budget": 700000, "status": "With Documents"},
-            {"id": 12, "quarter": "Third Quarter", "equipment_no": "BH-100", "activity": "MAIN PUMP, SWING MOTOR, UC, FINAL DRIVE", "po_reference": "—", "budget": 1200000, "status": "Pending"},
-            {"id": 13, "quarter": "Third Quarter", "equipment_no": "BH-134", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 2700000, "status": "Pending"},
-            {"id": 14, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 15, "quarter": "Third Quarter", "equipment_no": "BH-139", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 16, "quarter": "Third Quarter", "equipment_no": "BH-152", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 17, "quarter": "Third Quarter", "equipment_no": "BH-153", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 18, "quarter": "Third Quarter", "equipment_no": "BH-155", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 19, "quarter": "Third Quarter", "equipment_no": "BH-115", "activity": "UC, FINAL DRIVE, MAIN PUMP", "po_reference": "—", "budget": 4100000, "status": "Pending"},
-            {"id": 20, "quarter": "Third Quarter", "equipment_no": "BH-116", "activity": "UC, FINAL DRIVE, MAIN PUMP", "po_reference": "—", "budget": 4100000, "status": "Pending"},
-            {"id": 21, "quarter": "Third Quarter", "equipment_no": "BH-117", "activity": "UC, FINAL DRIVE, MAIN PUMP", "po_reference": "—", "budget": 4100000, "status": "Pending"},
-            {"id": 22, "quarter": "Third Quarter", "equipment_no": "BH-122", "activity": "UC, FINAL DRIVE", "po_reference": "—", "budget": 1200000, "status": "Pending"},
-            {"id": 23, "quarter": "Third Quarter", "equipment_no": "BD-18", "activity": "UC,FINAL DRIVE, MAIN PUMP, TORQUE CONVERTER", "po_reference": "—", "budget": 4900000, "status": "Pending"},
-            {"id": 24, "quarter": "Third Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 1700000, "status": "Pending"},
-            {"id": 25, "quarter": "Third Quarter", "equipment_no": "BH-127", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 1200000, "status": "Pending"},
-            {"id": 26, "quarter": "Third Quarter", "equipment_no": "BH-136", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 27, "quarter": "Third Quarter", "equipment_no": "BH-143", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 28, "quarter": "Third Quarter", "equipment_no": "BH-144", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 2700000, "status": "Pending"},
-            {"id": 29, "quarter": "Third Quarter", "equipment_no": "BH-145", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 30, "quarter": "Third Quarter", "equipment_no": "BH-149", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 31, "quarter": "Third Quarter", "equipment_no": "BH-156", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 32, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "FINAL DRIVE RESEALING, MAIN PUMP, SWING MOTOR", "po_reference": "—", "budget": 2000000, "status": "Pending"},
-            {"id": 33, "quarter": "Third Quarter", "equipment_no": "BH-140", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 34, "quarter": "Third Quarter", "equipment_no": "BH-110", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 1200000, "status": "Pending"},
-            {"id": 35, "quarter": "Third Quarter", "equipment_no": "BH-138", "activity": "UNDECARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 36, "quarter": "Fourth Quarter", "equipment_no": "BH-157", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 700000, "status": "Pending"},
-            {"id": 37, "quarter": "Fourth Quarter", "equipment_no": "BH-57", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "po_reference": "—", "budget": 2750000, "status": "Pending"},
-            {"id": 38, "quarter": "Fourth Quarter", "equipment_no": "BH-58", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "po_reference": "—", "budget": 2000000, "status": "Pending"},
-            {"id": 39, "quarter": "Fourth Quarter", "equipment_no": "BH-67", "activity": "MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "po_reference": "—", "budget": 2300000, "status": "Pending"},
-            {"id": 40, "quarter": "Fourth Quarter", "equipment_no": "CR-12", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 3500000, "status": "Pending"},
-            {"id": 41, "quarter": "Fourth Quarter", "equipment_no": "BH-174", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 1850000, "status": "Pending"},
-            {"id": 42, "quarter": "Fourth Quarter", "equipment_no": "BH-176", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 1850000, "status": "Pending"},
-            {"id": 43, "quarter": "Fourth Quarter", "equipment_no": "BH-177", "activity": "FINAL DRIVE, UC", "po_reference": "—", "budget": 650000, "status": "Pending"},
-            {"id": 44, "quarter": "Fourth Quarter", "equipment_no": "BH-19", "activity": "ENGINE,FINAL DRIVE, SWING MOTOR, MAIN PUMP, UC", "po_reference": "—", "budget": 3500000, "status": "Pending"},
-            {"id": 45, "quarter": "Fourth Quarter", "equipment_no": "BH-68", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "po_reference": "—", "budget": 2300000, "status": "Pending"},
-            {"id": 46, "quarter": "Fourth Quarter", "equipment_no": "BH-89", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "po_reference": "—", "budget": 3200000, "status": "Pending"},
-            {"id": 47, "quarter": "Fourth Quarter", "equipment_no": "BH-90", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 1200000, "status": "Pending"},
-            {"id": 48, "quarter": "Fourth Quarter", "equipment_no": "BH-92", "activity": "FINAL DRIVE, UC, MAIN PUMP", "po_reference": "—", "budget": 2300000, "status": "Pending"},
-            {"id": 49, "quarter": "Fourth Quarter", "equipment_no": "BH-93", "activity": "UC, MAIN PUMP", "po_reference": "—", "budget": 2300000, "status": "Pending"},
-            {"id": 50, "quarter": "Fourth Quarter", "equipment_no": "BD-36", "activity": "UNDERCARRIAGE CHANGE-OUT", "po_reference": "—", "budget": 650000, "status": "Pending"}
-        ];
-
+        const API_URL = "https://sheetdb.io/api/v1/5y57ble7jrujx";
+        let dataset = [];
         let editingRowIds = new Set();
         let quarterChartInstance = null;
         let budgetChartInstance = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             initCharts();
-            applyFilters();
+            loadDatabaseFromAPI();
         });
+
+        // 1. READ: Fetch all existing entries from your SheetDB API
+        async function loadDatabaseFromAPI() {
+            setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                // standardizing properties safely
+                dataset = data.map(item => ({
+                    id: parseInt(item.id),
+                    quarter: item.quarter || '',
+                    equipment_no: item.equipment_no || '',
+                    activity: item.activity || '',
+                    po_reference: item.po_reference || '—',
+                    budget: parseFloat(item.budget) || 0,
+                    status: item.status || 'Pending'
+                }));
+                
+                setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
+            } catch (error) {
+                console.error("Database loading failed:", error);
+                setSyncStatus("API Connection Error", "text-red-400 bg-red-500/10");
+            }
+        }
+
+        function setSyncStatus(text, classes) {
+            const ind = document.getElementById("syncIndicator");
+            if (ind) {
+                ind.innerText = text;
+                ind.className = `text-[10px] font-medium px-2 py-0.5 rounded ${classes}`;
+            }
+        }
 
         function initCharts() {
             const canvasQ = document.getElementById('quarterChart');
@@ -233,9 +209,9 @@
                     data: {
                         labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                         datasets: [
-                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 40 },
-                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 40 },
-                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 40 }
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 12 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 12 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 12 }
                         ]
                     },
                     options: {
@@ -274,12 +250,15 @@
 
             const filtered = dataset.filter(item => {
                 const matchQ = (qFilter === 'All' || item.quarter.includes(qFilter));
-                const matchP = (prefixFilter === 'All' || item.equipment_no.startsWith(prefixFilter));
+                const matchP = (prefixFilter === 'All' || (item.equipment_no || '').startsWith(prefixFilter));
                 
                 const poString = (item.po_reference || "").toLowerCase();
+                const activityString = (item.activity || "").toLowerCase();
+                const equipString = (item.equipment_no || "").toLowerCase();
+                
                 const matchS = (!searchVal || 
-                                item.activity.toLowerCase().includes(searchVal) || 
-                                item.equipment_no.toLowerCase().includes(searchVal) ||
+                                activityString.includes(searchVal) || 
+                                equipString.includes(searchVal) ||
                                 poString.includes(searchVal));
                 
                 return matchQ && matchP && matchS;
@@ -320,7 +299,7 @@
             const segments = {
                 'First Quarter': { done: 0, docs: 0, pending: 0 },
                 'Second Quarter': { done: 0, docs: 0, pending: 0 },
-                'Third Quarter': { done: 0, docs: 0, pending: 0 },
+                'Third Quarter': { done: 0, done: 0, docs: 0, pending: 0 },
                 'Fourth Quarter': { done: 0, docs: 0, pending: 0 }
             };
 
@@ -334,9 +313,9 @@
                 }
 
                 const prefix = (item.equipment_no || "").toUpperCase();
-                if (prefix.startsWith('BH')) bhBudget += item.budget;
-                else if (prefix.startsWith('BD')) bdBudget += item.budget;
-                else if (prefix.startsWith('CR')) crBudget += item.budget;
+                if (prefix.startsWith('BH')) bhBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('BD')) bdBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('CR')) crBudget += (parseFloat(item.budget) || 0);
             });
 
             if (quarterChartInstance) {
@@ -360,6 +339,11 @@
             const counter = document.getElementById('tableRowCounter');
             if (counter) counter.innerText = `${data.length} Items`;
 
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-medium">No projects found matching current filter query</td></tr>`;
+                return;
+            }
+
             data.forEach(item => {
                 const row = document.createElement('tr');
                 row.id = `row-${item.id}`;
@@ -368,9 +352,9 @@
                 if (editingRowIds.has(item.id)) {
                     row.innerHTML = `
                         <td class="p-1"><select class="row-quarter edit-input w-full rounded text-xs"><option value="First Quarter" ${item.quarter.includes('First')?'selected':''}>Q1</option><option value="Second Quarter" ${item.quarter.includes('Second')?'selected':''}>Q2</option><option value="Third Quarter" ${item.quarter.includes('Third')?'selected':''}>Q3</option><option value="Fourth Quarter" ${item.quarter.includes('Fourth')?'selected':''}>Q4</option></select></td>
-                        <td class="p-1"><input type="text" value="${item.equipment_no}" class="row-equip edit-input w-full rounded font-bold uppercase text-xs"></td>
-                        <td class="p-1"><input type="text" value="${item.activity}" class="row-activity edit-input w-full rounded text-xs"></td>
-                        <td class="p-1"><input type="text" value="${item.po_reference || ''}" class="row-po edit-input w-full rounded text-xs"></td>
+                        <td class="p-1"><input type="text" value="${item.equipment_no || ''}" class="row-equip edit-input w-full rounded font-bold uppercase text-xs"></td>
+                        <td class="p-1"><input type="text" value="${item.activity || ''}" class="row-activity edit-input w-full rounded text-xs"></td>
+                        <td class="p-1"><input type="text" value="${item.po_reference !== '—' ? item.po_reference : ''}" class="row-po edit-input w-full rounded text-xs"></td>
                         <td class="p-1"><input type="number" value="${item.budget}" class="row-budget edit-input w-full text-right rounded text-xs"></td>
                         <td class="p-1"><select class="row-status edit-input w-full rounded font-bold text-xs"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
                         <td class="p-1 text-center">
@@ -401,34 +385,106 @@
         function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
         function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
         
-        function saveEditingRow(id) {
+        // 2. UPDATE: Push spreadsheet changes back to your SheetDB API route
+        async function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
-            const targetItem = dataset.find(item => item.id === id);
-            if (targetItem) {
-                targetItem.quarter = tr.querySelector('.row-quarter').value;
-                targetItem.equipment_no = tr.querySelector('.row-equip').value;
-                targetItem.activity = tr.querySelector('.row-activity').value;
-                targetItem.po_reference = tr.querySelector('.row-po').value || '—';
-                targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
-                targetItem.status = tr.querySelector('.row-status').value;
+
+            const updatedData = {
+                quarter: tr.querySelector('.row-quarter').value,
+                equipment_no: tr.querySelector('.row-equip').value,
+                activity: tr.querySelector('.row-activity').value,
+                po_reference: tr.querySelector('.row-po').value || '—',
+                budget: parseFloat(tr.querySelector('.row-budget').value) || 0,
+                status: tr.querySelector('.row-status').value
+            };
+
+            setSyncStatus("Saving Changes...", "text-amber-400 bg-amber-500/10");
+
+            try {
+                // SheetDB structural patch format updates where matches column condition
+                const response = await fetch(`${API_URL}/id/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: updatedData })
+                });
+                
+                if (response.ok) {
+                    const targetItem = dataset.find(item => item.id === id);
+                    if (targetItem) Object.assign(targetItem, updatedData);
+                    editingRowIds.delete(id);
+                    setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
+                    applyFilters();
+                } else {
+                    alert("Failed to write to spreadsheet API cloud registry.");
+                    setSyncStatus("Sync failed", "text-red-400 bg-red-500/10");
+                }
+            } catch (err) {
+                console.error(err);
+                setSyncStatus("Sync error", "text-red-400 bg-red-500/10");
             }
-            editingRowIds.delete(id);
-            applyFilters();
         }
 
-        function deleteRow(id) {
-            if (confirm("Permanently drop this log item from the database?")) {
-                dataset = dataset.filter(item => item.id !== id);
-                applyFilters();
+        // 3. DELETE: Drop a structural line item entry row from SheetDB
+        async function deleteRow(id) {
+            if (!confirm("Permanently delete this entry from your Google Sheet cloud database?")) return;
+            
+            setSyncStatus("Removing Item...", "text-amber-400 bg-amber-500/10");
+            try {
+                const response = await fetch(`${API_URL}/id/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    dataset = dataset.filter(item => item.id !== id);
+                    setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
+                    applyFilters();
+                } else {
+                    alert("Could not perform item drop operation on remote API endpoints.");
+                }
+            } catch (err) {
+                console.error(err);
+                setSyncStatus("API Connection Error", "text-red-400 bg-red-500/10");
             }
         }
 
-        function addNewRow() {
+        // 4. CREATE: Generate new tracking rows and push immediately into your sheet
+        async function addNewRow() {
+            setSyncStatus("Creating item...", "text-amber-400 bg-amber-500/10");
+            
+            // Build a clean, unconflicting ID number
             const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => o.id)) + 1 : 1;
-            dataset.unshift({ id: nextId, quarter: "First Quarter", equipment_no: "BH-NEW", activity: "Enter details here...", po_reference: "—", budget: 0, status: "Pending" });
-            editingRowIds.add(nextId);
-            applyFilters();
+            
+            const newRowObj = {
+                id: nextId,
+                quarter: "First Quarter",
+                equipment_no: "BH-NEW",
+                activity: "Enter planned activity details...",
+                po_reference: "—",
+                budget: 0,
+                status: "Pending"
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: [newRowObj] })
+                });
+
+                if (response.ok) {
+                    dataset.unshift(newRowObj);
+                    editingRowIds.add(nextId); // Instantly drop item into inline-editor focus state
+                    setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
+                    applyFilters();
+                } else {
+                    alert("API refused insertion of new record into Google Sheets spreadsheet.");
+                }
+            } catch (err) {
+                console.error(err);
+                setSyncStatus("Insertion error", "text-red-400 bg-red-500/10");
+            }
         }
     </script>
 </body>
