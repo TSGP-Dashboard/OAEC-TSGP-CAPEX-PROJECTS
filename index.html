@@ -175,7 +175,7 @@
 
     </div>
 
-   <script>
+  <script>
     // FULL 50-ITEM MASTER DATASET
     let dataset = [
         {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "budget": 0, "status": "Done"},
@@ -231,17 +231,70 @@
     ];
 
     let editingRowIds = new Set();
+    let quarterChartInstance = null;
+    let budgetChartInstance = null;
 
-    // Trigger calculation cycles on application load
+    // Trigger chart generation and initial application data calculations
     window.addEventListener('DOMContentLoaded', () => {
+        initCharts();
         applyFilters();
     });
 
+    // CHARTS RENDER INITIALIZER
+    function initCharts() {
+        // Find canvas contexts safely. Check common element tags if names vary.
+        const canvasQ = document.getElementById('quarterChart') || document.querySelector('canvas[id*="quarter"]') || document.querySelector('canvas');
+        const canvasB = document.getElementById('budgetChart') || document.querySelector('canvas[id*="budget"]') || document.querySelectorAll('canvas')[1];
+        
+        if (canvasQ) {
+            quarterChartInstance = new Chart(canvasQ.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [
+                        { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 16 },
+                        { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 16 },
+                        { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 16 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, color: '#9ca3af' } } },
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, grid: { color: 'rgba(156, 163, 175, 0.1)' } }
+                    }
+                }
+            });
+        }
+
+        if (canvasB) {
+            budgetChartInstance = new Chart(canvasB.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
+                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#9ca3af' } } },
+                    cutout: '75%'
+                }
+            });
+        }
+    }
+
     // MASTER INTERACTIVE CORE FILTER CONTROLLER
     function applyFilters() {
-        const qFilter = document.getElementById('filterQuarter').value;
-        const prefixFilter = document.getElementById('filterPrefix') ? document.getElementById('filterPrefix').value : 'All';
-        const searchVal = document.getElementById('searchBar').value.toLowerCase();
+        const qFilterEl = document.getElementById('filterQuarter') || document.querySelector('select');
+        const prefixFilterEl = document.getElementById('filterPrefix') || document.querySelectorAll('select')[1];
+        const searchBarEl = document.getElementById('searchBar') || document.querySelector('input[type="text"]');
+
+        const qFilter = qFilterEl ? qFilterEl.value : 'All';
+        const prefixFilter = prefixFilterEl ? prefixFilterEl.value : 'All';
+        const searchVal = searchBarEl ? searchBarEl.value.toLowerCase() : '';
 
         // Slice dynamically into an isolated target array context
         const filtered = dataset.filter(item => {
@@ -258,7 +311,6 @@
 
     // LIVE SEGMENT RECALCULATION ENGINE
     function updateVisualGraphsAndMetrics(filteredData) {
-        // Quantify totals explicitly derived from the current view scope
         const totalCount = filteredData.length;
         const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
         
@@ -266,36 +318,72 @@
         const docsCount = filteredData.filter(i => i.status === 'With Documents').length;
         const pendingCount = filteredData.filter(i => i.status === 'Pending').length;
         
-        // Formulate relative percentages inside active selection bounds
         const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
         const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
 
-        // Push calculated variables directly back into UI view nodes
-        if (document.getElementById('metricTotalTracked')) document.getElementById('metricTotalTracked').innerText = totalCount;
-        if (document.getElementById('metricDoneStatus')) document.getElementById('metricDoneStatus').innerText = doneCount;
-        if (document.getElementById('metricWithDocs')) document.getElementById('metricWithDocs').innerText = docsCount;
-        if (document.getElementById('metricPending')) document.getElementById('metricPending').innerText = pendingCount;
+        // Push values into UI nodes safely
+        const setNodeText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
         
-        if (document.getElementById('metricBudget')) {
-            document.getElementById('metricBudget').innerText = '₱' + totalBudget.toLocaleString();
+        // Find nodes contextually if standard IDs aren't matching perfectly
+        const totalTrackedNode = document.getElementById('metricTotalTracked') || document.querySelector('.text-2xl, .text-3xl');
+        if (totalTrackedNode) totalTrackedNode.innerText = totalCount;
+
+        setNodeText('metricDoneStatus', doneCount);
+        setNodeText('metricWithDocs', docsCount);
+        setNodeText('metricPending', pendingCount);
+        
+        const budgetNode = document.getElementById('metricBudget') || document.querySelector('h3[id*="Budget"]') || Array.from(document.querySelectorAll('h3, .text-2xl')).find(el => el.innerText.includes('₱'));
+        if (budgetNode) budgetNode.innerText = '₱' + totalBudget.toLocaleString();
+        
+        setNodeText('metricCompRate', completionRate + '%');
+        const barComp = document.getElementById('barCompRate'); if (barComp) barComp.style.width = completionRate + '%';
+        
+        setNodeText('metricPipeline', pipelineProgress + '%');
+        const barPipe = document.getElementById('barPipeline'); if (barPipe) barPipe.style.width = pipelineProgress + '%';
+
+        // RE-COMPUTE GRAPH DATA STRUCTS LIVE
+        const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
+        const segments = {
+            'First Quarter': { done: 0, docs: 0, pending: 0 },
+            'Second Quarter': { done: 0, docs: 0, pending: 0 },
+            'Third Quarter': { done: 0, docs: 0, pending: 0 },
+            'Fourth Quarter': { done: 0, docs: 0, pending: 0 }
+        };
+
+        let bhBudget = 0, bdBudget = 0, crBudget = 0;
+
+        filteredData.forEach(item => {
+            if (segments[item.quarter]) {
+                if (item.status === 'Done') segments[item.quarter].done++;
+                else if (item.status === 'With Documents') segments[item.quarter].docs++;
+                else segments[item.quarter].pending++;
+            }
+            if (item.equipment_no.startsWith('BH')) bhBudget += item.budget;
+            else if (item.equipment_no.startsWith('BD')) bdBudget += item.budget;
+            else crBudget += item.budget;
+        });
+
+        if (quarterChartInstance) {
+            quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q].done);
+            quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q].docs);
+            quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q].pending);
+            quarterChartInstance.update();
         }
-        
-        if (document.getElementById('metricCompRate')) document.getElementById('metricCompRate').innerText = completionRate + '%';
-        if (document.getElementById('barCompRate')) document.getElementById('barCompRate').style.width = completionRate + '%';
-        
-        if (document.getElementById('metricPipeline')) document.getElementById('metricPipeline').innerText = pipelineProgress + '%';
-        if (document.getElementById('barPipeline')) document.getElementById('barPipeline').style.width = pipelineProgress + '%';
+
+        if (budgetChartInstance) {
+            budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget];
+            budgetChartInstance.update();
+        }
     }
 
     // LIST WORKSPACE INLINE COMPONENT GENERATOR
     function renderTable(data) {
-        const tbody = document.getElementById('projectTableBody');
+        const tbody = document.getElementById('projectTableBody') || document.querySelector('tbody');
         if (!tbody) return;
         tbody.innerHTML = '';
         
-        if (document.getElementById('tableRowCounter')) {
-            document.getElementById('tableRowCounter').innerText = `${data.length} Items Listed`;
-        }
+        const counter = document.getElementById('tableRowCounter');
+        if (counter) counter.innerText = `${data.length} Items Listed`;
 
         data.forEach(item => {
             const row = document.createElement('tr');
@@ -333,7 +421,6 @@
         });
     }
 
-    // AUXILIARY UTILITY INTERACTIVE HANDLERS
     function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
     function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
     
