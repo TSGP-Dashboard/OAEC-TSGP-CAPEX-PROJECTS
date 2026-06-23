@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 CAPEX Interactive Management Dashboard</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">\
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
         .edit-input { background: #fff; border: 1px solid #cbd5e1; font-weight: 500; }
@@ -20,422 +17,422 @@
 
     <div class="max-w-[1600px] mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         
-        <!-- DASHBOARD HEADER -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-6 mb-6 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-slate-100 gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">OAEC - 2026 CAPEX PROJECTS</h1>
-                <p class="text-sm text-slate-500">TSG & PLANNING</p>
+                <span class="text-xs font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-2.5 py-1 rounded-md">CAPEX Log Operations</span>
+                <h1 class="text-2xl font-bold text-slate-900 mt-2 tracking-tight">2026 OVERALL CAPEX PROJECTS</h1>
+                <p class="text-sm text-slate-500 mt-0.5">Heavy Equipment Asset Reconditioning Plan & Progress Hub</p>
             </div>
-            <div class="flex flex-wrap items-center gap-3">
-                <button onclick="addNewRow()" class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-all shadow-sm cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                    <span>Add New Capex Project</span>
-                </button>
-                <button onclick="exportJSONData()" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium border border-slate-200 rounded-lg transition-all shadow-xs cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Download Data
-                </button>
-                <button onclick="resetFilters()" class="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-all shadow-xs" title="Reset Filters">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" /></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- FILTERS -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200/60">
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Quarter</label>
-                <select id="filterQuarter" onchange="applyFilters()" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset no. or activity..." class="w-full pl-3 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium">
+                </div>
+                <select id="filterQuarter" onchange="applyFilters()" class="px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold text-slate-700">
                     <option value="All">All Quarters</option>
                     <option value="First Quarter">First Quarter (Q1)</option>
                     <option value="Second Quarter">Second Quarter (Q2)</option>
                     <option value="Third Quarter">Third Quarter (Q3)</option>
                     <option value="Fourth Quarter">Fourth Quarter (Q4)</option>
                 </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Equipment Category</label>
-                <select id="filterPrefix" onchange="applyFilters()" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="filterPrefix" onchange="applyFilters()" class="px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold text-slate-700">
                     <option value="All">All Equipment Types</option>
                     <option value="BH">BH (Excavators)</option>
                     <option value="BD">BD (Dozers)</option>
                     <option value="CR">CR (Cranes)</option>
                 </select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Live Search Input</label>
-                <input id="searchBar" type="text" oninput="applyFilters()" placeholder="Type equipment no. or activity to drill down..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-        </div>
-
-        <!-- TOP METRICS GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">CAPEX Project Registry</span>
-                <div class="grid grid-cols-2 gap-2 mt-3">
-                    <div class="border-r border-slate-100">
-                        <span id="metricTotal" class="block text-2xl font-bold text-slate-800">50</span>
-                        <span class="text-[11px] text-slate-400 font-medium">Total Tracked</span>
-                    </div>
-                    <div class="pl-2">
-                        <span id="metricCompleted" class="block text-2xl font-bold text-emerald-600">4</span>
-                        <span class="text-[11px] text-slate-400 font-medium">Done Status</span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2 mt-3 border-t border-slate-50 pt-2">
-                    <div class="border-r border-slate-100">
-                        <span id="metricDocs" class="block text-sm font-semibold text-blue-600">7</span>
-                        <span class="text-[10px] text-slate-400 uppercase font-medium">With Documents</span>
-                    </div>
-                    <div class="pl-2">
-                        <span id="metricPending" class="block text-sm font-semibold text-amber-600">39</span>
-                        <span class="text-[10px] text-slate-400 uppercase font-medium">Pending</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Actual Completion Rate</span>
-                <div class="my-auto">
-                    <span id="metricCompRate" class="text-3xl font-bold text-slate-800 tracking-tight">8%</span>
-                    <div class="w-full bg-slate-100 rounded-full h-2 mt-2">
-                        <div id="barCompRate" class="bg-emerald-500 h-2 rounded-full" style="width: 8%"></div>
-                    </div>
-                </div>
-                <span class="text-[11px] text-slate-400 font-medium">Based on current status</span>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Documentation Progress</span>
-                <div class="my-auto">
-                    <span id="metricDocRate" class="text-3xl font-bold text-slate-800 tracking-tight">22%</span>
-                    <div class="w-full bg-slate-100 rounded-full h-2 mt-2">
-                        <div id="barDocRate" class="bg-blue-500 h-2 rounded-full" style="width: 22%"></div>
-                    </div>
-                </div>
-                <span class="text-[11px] text-slate-400 font-medium">Documented breakdown</span>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">CAPEX Budget</span>
-                <div class="my-auto">
-                    <span id="metricBudget" class="text-2xl font-bold text-slate-800 tracking-tight">₱71,950,000</span>
-                    <p class="text-[11px] text-slate-500 mt-1">Adjusts automatically upon edits</p>
-                </div>
-                <span class="text-[11px] text-slate-400 font-medium">Currency: PHP (₱)</span>
+                <button onclick="addNewRow()" class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-2">
+                    <span>+</span> Add Project Log
+                </button>
             </div>
         </div>
 
-        <!-- CHARTS VISUAL DIAGRAMS -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs lg:col-span-2">
-                <div class="mb-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Project Timeline Status Distributions</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 my-6">
+            <div class="bg-slate-50/60 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold tracking-wide uppercase text-slate-400">Total Tracked Tasks</p>
+                    <h3 class="text-3xl font-bold text-slate-900 mt-1" id="metricTotalTracked">0</h3>
                 </div>
-                <div class="h-[220px] relative">
+                <div class="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-xs font-medium text-slate-500">
+                    <span>Active Master Plan Scope</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50/60 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold tracking-wide uppercase text-slate-400">Aggregate Budget Capital</p>
+                    <h3 class="text-3xl font-bold text-slate-900 mt-1" id="metricBudget">₱0</h3>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100/80 flex items-center justify-between text-xs font-medium text-slate-500">
+                    <span>Estimated Total Financial Outlay</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-50/60 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold tracking-wide uppercase text-slate-400">Task Completion Rate</p>
+                    <h3 class="text-3xl font-bold text-emerald-600 mt-1" id="metricCompRate">0%</h3>
+                </div>
+                <div class="mt-4">
+                    <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                        <div id="barCompRate" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50/60 p-5 rounded-2xl border border-slate-100 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-semibold tracking-wide uppercase text-slate-400">Documentation Pipeline Progress</p>
+                    <h3 class="text-3xl font-bold text-blue-600 mt-1" id="metricPipeline">0%</h3>
+                </div>
+                <div class="mt-4">
+                    <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                        <div id="barPipeline" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 my-6">
+            <div class="lg:col-span-2 p-5 bg-white border border-slate-200 rounded-2xl">
+                <div class="mb-4">
+                    <h4 class="text-sm font-bold text-slate-800">PROJECT TIMELINE STATUS DISTRIBUTIONS</h4>
+                    <p class="text-xs text-slate-400 mt-0.5">Quarterly tracking of items categorized by workflow stage</p>
+                </div>
+                <div class="h-64 relative">
                     <canvas id="quarterChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                <div class="mb-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Budget Share By Equipment Type</h3>
+            <div class="p-5 bg-white border border-slate-200 rounded-2xl">
+                <div class="mb-4">
+                    <h4 class="text-sm font-bold text-slate-800">BUDGET SHARE BY EQUIPMENT TYPE</h4>
+                    <p class="text-xs text-slate-400 mt-0.5">Total capital breakdown based on asset standard prefix identification</p>
                 </div>
-                <div class="h-[220px] relative flex items-center justify-center">
+                <div class="h-64 relative">
                     <canvas id="budgetChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- EDITABLE MASTER REGISTER TABLE -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">CAPEX Interactive Ledger Grid</h3>
-                <span id="tableRowCounter" class="text-xs bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded-full">Showing 50 items</span>
+        <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white mt-6">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">MASTER PROJECTS DATABASE REGISTRY</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Granular inline interactive view allowing edits, removal, and status categorization updates</p>
+                </div>
+                <span id="tableRowCounter" class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">0 Items Listed</span>
             </div>
-            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
-                <table class="w-full text-left text-sm border-collapse">
-                    <thead class="bg-slate-100 text-slate-600 font-medium text-xs uppercase tracking-wider sticky top-0 shadow-xs z-10">
-                        <tr>
-                            <th class="p-3 bg-slate-100 w-[140px]">Quarter</th>
-                            <th class="p-3 bg-slate-100 w-[120px]">Equipment No</th>
-                            <th class="p-3 bg-slate-100">Planned Activity Description</th>
-                            <th class="p-3 bg-slate-100 w-[180px]">Reference / PO</th>
-                            <th class="p-3 bg-slate-100 text-right w-[150px]">Budget Amount</th>
-                            <th class="p-3 bg-slate-100 text-center w-[160px]">Workflow Status</th>
-                            <th class="p-3 bg-slate-100 text-center w-[100px]">Actions</th>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="p-3 pl-5 w-44">Target Quarter</th>
+                            <th class="p-3 w-40">Equipment No.</th>
+                            <th class="p-3">Planned Activity Action Details</th>
+                            <th class="p-3 text-right w-44">Budget Allocation</th>
+                            <th class="p-3 text-center w-40">Status Stage</th>
+                            <th class="p-3 text-center w-32">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="projectTableBody" class="divide-y divide-slate-100 text-slate-700">
-                        <!-- Content dynamically rendered via JS -->
-                    </tbody>
+                    <tbody id="projectTableBody" class="text-sm divide-y divide-slate-100">
+                        </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-4 items-center justify-end px-2 text-xs font-medium text-slate-400">
+            <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+                <span>Done Status Logged: <strong id="metricDoneStatus" class="text-slate-600">0</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span>
+                <span>With Documents Stage: <strong id="metricWithDocs" class="text-slate-600">0</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                <span>Pending Execution: <strong id="metricPending" class="text-slate-600">0</strong></span>
             </div>
         </div>
 
     </div>
 
-<script>
-    // FULL 50-ITEM MASTER DATASET
-    let dataset = [
-        {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "budget": 0, "status": "Done"},
-        {"id": 2, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF UNDERCARRIAGE", "budget": 0, "status": "Done"},
-        {"id": 3, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF UNDERCARRIAGE", "budget": 0, "status": "Done"},
-        {"id": 4, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF POWERTRAIN (TRANSMISSION AND FINAL DRIVE)", "budget": 0, "status": "Done"},
-        {"id": 5, "quarter": "Second Quarter", "equipment_no": "BD-16", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 0, "status": "With Documents"},
-        {"id": 6, "quarter": "Second Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 0, "status": "With Documents"},
-        {"id": 7, "quarter": "Second Quarter", "equipment_no": "BD-14", "activity": "ENGINE TOP OVERHAUL", "budget": 0, "status": "With Documents"},
-        {"id": 8, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 0, "status": "With Documents"},
-        {"id": 9, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "FINAL DRIVE CHANGE OUT", "budget": 0, "status": "With Documents"},
-        {"id": 10, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "With Documents"},
-        {"id": 11, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "UNDECARRIAGE CHANGE-OUT", "budget": 700000, "status": "With Documents"},
-        {"id": 12, "quarter": "Third Quarter", "equipment_no": "BH-100", "activity": "MAIN PUMP, SWING MOTOR, UC, FINAL DRIVE", "budget": 1200000, "status": "Pending"},
-        {"id": 13, "quarter": "Third Quarter", "equipment_no": "BH-134", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 2700000, "status": "Pending"},
-        {"id": 14, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 15, "quarter": "Third Quarter", "equipment_no": "BH-139", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 16, "quarter": "Third Quarter", "equipment_no": "BH-152", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 17, "quarter": "Third Quarter", "equipment_no": "BH-153", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 18, "quarter": "Third Quarter", "equipment_no": "BH-155", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 19, "quarter": "Third Quarter", "equipment_no": "BH-115", "activity": "UC, FINAL DRIVE, MAIN PUMP", "budget": 4100000, "status": "Pending"},
-        {"id": 20, "quarter": "Third Quarter", "equipment_no": "BH-116", "activity": "UC, FINAL DRIVE, MAIN PUMP", "budget": 4100000, "status": "Pending"},
-        {"id": 21, "quarter": "Third Quarter", "equipment_no": "BH-117", "activity": "UC, FINAL DRIVE, MAIN PUMP", "budget": 4100000, "status": "Pending"},
-        {"id": 22, "quarter": "Third Quarter", "equipment_no": "BH-122", "activity": "UC, FINAL DRIVE", "budget": 1200000, "status": "Pending"},
-        {"id": 23, "quarter": "Third Quarter", "equipment_no": "BD-18", "activity": "UC,FINAL DRIVE, MAIN PUMP, TORQUE CONVERTER", "budget": 4900000, "status": "Pending"},
-        {"id": 24, "quarter": "Third Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 1700000, "status": "Pending"},
-        {"id": 25, "quarter": "Third Quarter", "equipment_no": "BH-127", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 1200000, "status": "Pending"},
-        {"id": 26, "quarter": "Third Quarter", "equipment_no": "BH-136", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
-        {"id": 27, "quarter": "Third Quarter", "equipment_no": "BH-143", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
-        {"id": 28, "quarter": "Third Quarter", "equipment_no": "BH-144", "activity": "FINAL DRIVE, UC", "budget": 2700000, "status": "Pending"},
-        {"id": 29, "quarter": "Third Quarter", "equipment_no": "BH-145", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
-        {"id": 30, "quarter": "Third Quarter", "equipment_no": "BH-149", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
-        {"id": 31, "quarter": "Third Quarter", "equipment_no": "BH-156", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 32, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "FINAL DRIVE RESEALING, MAIN PUMP, SWING MOTOR", "budget": 2000000, "status": "Pending"},
-        {"id": 33, "quarter": "Third Quarter", "equipment_no": "BH-140", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
-        {"id": 34, "quarter": "Third Quarter", "equipment_no": "BH-110", "activity": "FINAL DRIVE, UC", "budget": 1200000, "status": "Pending"},
-        {"id": 35, "quarter": "Third Quarter", "equipment_no": "BH-138", "activity": "UNDECARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 36, "quarter": "Fourth Quarter", "equipment_no": "BH-157", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
-        {"id": 37, "quarter": "Fourth Quarter", "equipment_no": "BH-57", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "budget": 2750000, "status": "Pending"},
-        {"id": 38, "quarter": "Fourth Quarter", "equipment_no": "BH-58", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "budget": 2000000, "status": "Pending"},
-        {"id": 39, "quarter": "Fourth Quarter", "equipment_no": "BH-67", "activity": "MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "budget": 2300000, "status": "Pending"},
-        {"id": 40, "quarter": "Fourth Quarter", "equipment_no": "CR-12", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 3500000, "status": "Pending"},
-        {"id": 41, "quarter": "Fourth Quarter", "equipment_no": "BH-174", "activity": "FINAL DRIVE, UC", "budget": 1850000, "status": "Pending"},
-        {"id": 42, "quarter": "Fourth Quarter", "equipment_no": "BH-176", "activity": "FINAL DRIVE, UC", "budget": 1850000, "status": "Pending"},
-        {"id": 43, "quarter": "Fourth Quarter", "equipment_no": "BH-177", "activity": "FINAL DRIVE, UC", "budget": 650000, "status": "Pending"},
-        {"id": 44, "quarter": "Fourth Quarter", "equipment_no": "BH-19", "activity": "ENGINE,FINAL DRIVE, SWING MOTOR, MAIN PUMP, UC", "budget": 3500000, "status": "Pending"},
-        {"id": 45, "quarter": "Fourth Quarter", "equipment_no": "BH-68", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "budget": 2300000, "status": "Pending"},
-        {"id": 46, "quarter": "Fourth Quarter", "equipment_no": "BH-89", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "budget": 3200000, "status": "Pending"},
-        {"id": 47, "quarter": "Fourth Quarter", "equipment_no": "BH-90", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 1200000, "status": "Pending"},
-        {"id": 48, "quarter": "Fourth Quarter", "equipment_no": "BH-92", "activity": "FINAL DRIVE, UC, MAIN PUMP", "budget": 2300000, "status": "Pending"},
-        {"id": 49, "quarter": "Fourth Quarter", "equipment_no": "BH-93", "activity": "UC, MAIN PUMP", "budget": 2300000, "status": "Pending"},
-        {"id": 50, "quarter": "Fourth Quarter", "equipment_no": "BD-36", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 650000, "status": "Pending"}
-    ];
+    <script>
+        // FULL 50-ITEM MASTER DATASET
+        let dataset = [
+            {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "budget": 0, "status": "Done"},
+            {"id": 2, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF UNDERCARRIAGE", "budget": 0, "status": "Done"},
+            {"id": 3, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF UNDERCARRIAGE", "budget": 0, "status": "Done"},
+            {"id": 4, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF POWERTRAIN (TRANSMISSION AND FINAL DRIVE)", "budget": 0, "status": "Done"},
+            {"id": 5, "quarter": "Second Quarter", "equipment_no": "BD-16", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 0, "status": "With Documents"},
+            {"id": 6, "quarter": "Second Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 0, "status": "With Documents"},
+            {"id": 7, "quarter": "Second Quarter", "equipment_no": "BD-14", "activity": "ENGINE TOP OVERHAUL", "budget": 0, "status": "With Documents"},
+            {"id": 8, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 0, "status": "With Documents"},
+            {"id": 9, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "FINAL DRIVE CHANGE OUT", "budget": 0, "status": "With Documents"},
+            {"id": 10, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "With Documents"},
+            {"id": 11, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "UNDECARRIAGE CHANGE-OUT", "budget": 700000, "status": "With Documents"},
+            {"id": 12, "quarter": "Third Quarter", "equipment_no": "BH-100", "activity": "MAIN PUMP, SWING MOTOR, UC, FINAL DRIVE", "budget": 1200000, "status": "Pending"},
+            {"id": 13, "quarter": "Third Quarter", "equipment_no": "BH-134", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 2700000, "status": "Pending"},
+            {"id": 14, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 15, "quarter": "Third Quarter", "equipment_no": "BH-139", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 16, "quarter": "Third Quarter", "equipment_no": "BH-152", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 17, "quarter": "Third Quarter", "equipment_no": "BH-153", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 18, "quarter": "Third Quarter", "equipment_no": "BH-155", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 19, "quarter": "Third Quarter", "equipment_no": "BH-115", "activity": "UC, FINAL DRIVE, MAIN PUMP", "budget": 4100000, "status": "Pending"},
+            {"id": 20, "quarter": "Third Quarter", "equipment_no": "BH-116", "activity": "UC, FINAL DRIVE, MAIN PUMP", "budget": 4100000, "status": "Pending"},
+            {"id": 21, "quarter": "Third Quarter", "equipment_no": "BH-117", "activity": "UC, FINAL DRIVE, MAIN PUMP", "budget": 4100000, "status": "Pending"},
+            {"id": 22, "quarter": "Third Quarter", "equipment_no": "BH-122", "activity": "UC, FINAL DRIVE", "budget": 1200000, "status": "Pending"},
+            {"id": 23, "quarter": "Third Quarter", "equipment_no": "BD-18", "activity": "UC,FINAL DRIVE, MAIN PUMP, TORQUE CONVERTER", "budget": 4900000, "status": "Pending"},
+            {"id": 24, "quarter": "Third Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 1700000, "status": "Pending"},
+            {"id": 25, "quarter": "Third Quarter", "equipment_no": "BH-127", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 1200000, "status": "Pending"},
+            {"id": 26, "quarter": "Third Quarter", "equipment_no": "BH-136", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
+            {"id": 27, "quarter": "Third Quarter", "equipment_no": "BH-143", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
+            {"id": 28, "quarter": "Third Quarter", "equipment_no": "BH-144", "activity": "FINAL DRIVE, UC", "budget": 2700000, "status": "Pending"},
+            {"id": 29, "quarter": "Third Quarter", "equipment_no": "BH-145", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
+            {"id": 30, "quarter": "Third Quarter", "equipment_no": "BH-149", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
+            {"id": 31, "quarter": "Third Quarter", "equipment_no": "BH-156", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 32, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "FINAL DRIVE RESEALING, MAIN PUMP, SWING MOTOR", "budget": 2000000, "status": "Pending"},
+            {"id": 33, "quarter": "Third Quarter", "equipment_no": "BH-140", "activity": "FINAL DRIVE, UC", "budget": 700000, "status": "Pending"},
+            {"id": 34, "quarter": "Third Quarter", "equipment_no": "BH-110", "activity": "FINAL DRIVE, UC", "budget": 1200000, "status": "Pending"},
+            {"id": 35, "quarter": "Third Quarter", "equipment_no": "BH-138", "activity": "UNDECARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 36, "quarter": "Fourth Quarter", "equipment_no": "BH-157", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 700000, "status": "Pending"},
+            {"id": 37, "quarter": "Fourth Quarter", "equipment_no": "BH-57", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "budget": 2750000, "status": "Pending"},
+            {"id": 38, "quarter": "Fourth Quarter", "equipment_no": "BH-58", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "budget": 2000000, "status": "Pending"},
+            {"id": 39, "quarter": "Fourth Quarter", "equipment_no": "BH-67", "activity": "MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "budget": 2300000, "status": "Pending"},
+            {"id": 40, "quarter": "Fourth Quarter", "equipment_no": "CR-12", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 3500000, "status": "Pending"},
+            {"id": 41, "quarter": "Fourth Quarter", "equipment_no": "BH-174", "activity": "FINAL DRIVE, UC", "budget": 1850000, "status": "Pending"},
+            {"id": 42, "quarter": "Fourth Quarter", "equipment_no": "BH-176", "activity": "FINAL DRIVE, UC", "budget": 1850000, "status": "Pending"},
+            {"id": 43, "quarter": "Fourth Quarter", "equipment_no": "BH-177", "activity": "FINAL DRIVE, UC", "budget": 650000, "status": "Pending"},
+            {"id": 44, "quarter": "Fourth Quarter", "equipment_no": "BH-19", "activity": "ENGINE,FINAL DRIVE, SWING MOTOR, MAIN PUMP, UC", "budget": 3500000, "status": "Pending"},
+            {"id": 45, "quarter": "Fourth Quarter", "equipment_no": "BH-68", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "budget": 2300000, "status": "Pending"},
+            {"id": 46, "quarter": "Fourth Quarter", "equipment_no": "BH-89", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "budget": 3200000, "status": "Pending"},
+            {"id": 47, "quarter": "Fourth Quarter", "equipment_no": "BH-90", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 1200000, "status": "Pending"},
+            {"id": 48, "quarter": "Fourth Quarter", "equipment_no": "BH-92", "activity": "FINAL DRIVE, UC, MAIN PUMP", "budget": 2300000, "status": "Pending"},
+            {"id": 49, "quarter": "Fourth Quarter", "equipment_no": "BH-93", "activity": "UC, MAIN PUMP", "budget": 2300000, "status": "Pending"},
+            {"id": 50, "quarter": "Fourth Quarter", "equipment_no": "BD-36", "activity": "UNDERCARRIAGE CHANGE-OUT", "budget": 650000, "status": "Pending"}
+        ];
 
-    let editingRowIds = new Set();
-    let quarterChartInstance = null;
-    let budgetChartInstance = null;
+        let editingRowIds = new Set();
+        let quarterChartInstance = null;
+        let budgetChartInstance = null;
 
-    window.addEventListener('DOMContentLoaded', () => {
-        initCharts();
-        applyFilters();
-    });
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            applyFilters();
+        });
 
-    function initCharts() {
-        const canvasQ = document.getElementById('quarterChart');
-        const canvasB = document.getElementById('budgetChart');
-        
-        if (canvasQ) {
-            quarterChartInstance = new Chart(canvasQ.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                    datasets: [
-                        { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 16 },
-                        { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 16 },
-                        { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 16 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, color: '#9ca3af' } } },
-                    scales: {
-                        x: { stacked: true, grid: { display: false } },
-                        y: { stacked: true, grid: { color: 'rgba(156, 163, 175, 0.1)' } }
-                    }
-                }
-            });
-        }
-
-        if (canvasB) {
-            budgetChartInstance = new Chart(canvasB.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
-                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444'], borderWidth: 0 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#9ca3af' } } },
-                    cutout: '75%'
-                }
-            });
-        }
-    }
-
-    function applyFilters() {
-        const qFilterEl = document.getElementById('filterQuarter');
-        const prefixFilterEl = document.getElementById('filterPrefix');
-        const searchBarEl = document.getElementById('searchBar');
-
-        const qFilter = qFilterEl ? qFilterEl.value : 'All';
-        const prefixFilter = prefixFilterEl ? prefixFilterEl.value : 'All';
-        const searchVal = searchBarEl ? searchBarEl.value.toLowerCase() : '';
-
-        const filtered = dataset.filter(item => {
-            const matchQ = (qFilter === 'All' || item.quarter.includes(qFilter) || qFilter.includes(item.quarter));
-            const matchP = (prefixFilter === 'All' || item.equipment_no.startsWith(prefixFilter));
-            const matchS = (!searchVal || item.activity.toLowerCase().includes(searchVal) || item.equipment_no.toLowerCase().includes(searchVal));
+        function initCharts() {
+            const canvasQ = document.getElementById('quarterChart');
+            const canvasB = document.getElementById('budgetChart');
             
-            return matchQ && matchP && matchS;
-        });
-
-        renderTable(filtered);
-        updateVisualGraphsAndMetrics(filtered); 
-    }
-
-    function updateVisualGraphsAndMetrics(filteredData) {
-        const totalCount = filteredData.length;
-        const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
-        
-        const doneCount = filteredData.filter(i => i.status === 'Done').length;
-        const docsCount = filteredData.filter(i => i.status === 'With Documents').length;
-        const pendingCount = filteredData.filter(i => i.status === 'Pending').length;
-        
-        const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
-        const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
-
-        const setNodeText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
-        
-        // Strictly target elements using their individual unique IDs
-        setNodeText('metricTotalTracked', totalCount);
-        setNodeText('metricDoneStatus', doneCount);
-        setNodeText('metricWithDocs', docsCount);
-        setNodeText('metricPending', pendingCount);
-        
-        const budgetNode = document.getElementById('metricBudget');
-        if (budgetNode) budgetNode.innerText = '₱' + totalBudget.toLocaleString();
-        
-        setNodeText('metricCompRate', completionRate + '%');
-        const barComp = document.getElementById('barCompRate'); if (barComp) barComp.style.width = completionRate + '%';
-        
-        setNodeText('metricPipeline', pipelineProgress + '%');
-        const barPipe = document.getElementById('barPipeline'); if (barPipe) barPipe.style.width = pipelineProgress + '%';
-
-        // RE-COMPUTE GRAPH DATA STRUCTS LIVE
-        const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
-        const segments = {
-            'First Quarter': { done: 0, docs: 0, pending: 0 },
-            'Second Quarter': { done: 0, docs: 0, pending: 0 },
-            'Third Quarter': { done: 0, docs: 0, pending: 0 },
-            'Fourth Quarter': { done: 0, docs: 0, pending: 0 }
-        };
-
-        let bhBudget = 0, bdBudget = 0, crBudget = 0;
-
-filteredData.forEach(item => {
-    if (segments[item.quarter]) {
-        if (item.status === 'Done') segments[item.quarter].done++;
-        else if (item.status === 'With Documents') segments[item.quarter].docs++;
-        else segments[item.quarter].pending++;
-    }
-    
-    // Explicit and case-insensitive check to prevent data mismatches
-    const equipNo = (item.equipment_no || "").toUpperCase();
-    if (equipNo.startsWith('BH')) {
-        bhBudget += (parseFloat(item.budget) || 0);
-    } else if (equipNo.startsWith('BD')) {
-        bdBudget += (parseFloat(item.budget) || 0);
-    } else if (equipNo.startsWith('CR')) {
-        crBudget += (parseFloat(item.budget) || 0);
-    }
-    }
-
-    function renderTable(data) {
-        const tbody = document.getElementById('projectTableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        
-        const counter = document.getElementById('tableRowCounter');
-        if (counter) counter.innerText = `${data.length} Items Listed`;
-
-        data.forEach(item => {
-            const row = document.createElement('tr');
-            row.id = `row-${item.id}`;
-            row.className = "hover:bg-slate-50/40 dark:hover:bg-white/[0.02] transition-colors border-b border-gray-100 dark:border-dark-ui";
-
-            if (editingRowIds.has(item.id)) {
-                row.innerHTML = `
-                    <td class="p-2"><select class="row-quarter edit-input w-full p-1 text-xs rounded"><option value="First Quarter" ${item.quarter.includes('First')?'selected':''}>Q1</option><option value="Second Quarter" ${item.quarter.includes('Second')?'selected':''}>Q2</option><option value="Third Quarter" ${item.quarter.includes('Third')?'selected':''}>Q3</option><option value="Fourth Quarter" ${item.quarter.includes('Fourth')?'selected':''}>Q4</option></select></td>
-                    <td class="p-2"><input type="text" value="${item.equipment_no}" class="row-equip edit-input w-full p-1 text-xs rounded font-bold uppercase"></td>
-                    <td class="p-2"><input type="text" value="${item.activity}" class="row-activity edit-input w-full p-1 text-xs rounded"></td>
-                    <td class="p-2"><input type="number" value="${item.budget}" class="row-budget edit-input w-full p-1 text-xs text-right rounded"></td>
-                    <td class="p-2"><select class="row-status edit-input w-full p-1 text-xs rounded font-bold"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
-                    <td class="p-2 text-center">
-                        <button onclick="saveEditingRow(${item.id})" class="text-emerald-500 font-bold px-1 mr-2">✓</button>
-                        <button onclick="cancelEditingRow(${item.id})" class="text-gray-400 font-bold px-1">✕</button>
-                    </td>`;
-            } else {
-                let badgeColor = "bg-amber-500/10 text-amber-500 border-amber-500/20";
-                if (item.status === 'Done') badgeColor = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-                if (item.status === 'With Documents') badgeColor = "bg-blue-500/10 text-blue-600 border-blue-500/20";
-
-                row.innerHTML = `
-                    <td class="p-3 text-gray-500 font-medium">${item.quarter}</td>
-                    <td class="p-3 font-bold text-gray-900 dark:text-white">${item.equipment_no}</td>
-                    <td class="p-3 text-gray-700 dark:text-slate-300">${item.activity}</td>
-                    <td class="p-3 text-right font-semibold text-gray-900 dark:text-white">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
-                    <td class="p-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
-                    <td class="p-3 text-center">
-                        <button onclick="startEditingRow(${item.id})" class="text-gray-400 hover:text-gray-900 dark:hover:text-white mr-2" title="Edit row">📝</button>
-                        <button onclick="deleteRow(${item.id})" class="text-gray-400 hover:text-red-500" title="Delete row">🗑️</button>
-                    </td>`;
+            if (canvasQ) {
+                quarterChartInstance = new Chart(canvasQ.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                        datasets: [
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 16 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 16 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 16 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, color: '#9ca3af' } } },
+                        scales: {
+                            x: { stacked: true, grid: { display: false } },
+                            y: { stacked: true, grid: { color: 'rgba(156, 163, 175, 0.1)' } }
+                        }
+                    }
+                });
             }
-            tbody.appendChild(row);
-        });
-    }
 
-    function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
-    function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
-    
-    function saveEditingRow(id) {
-        const tr = document.getElementById(`row-${id}`);
-        if (!tr) return;
-        const targetItem = dataset.find(item => item.id === id);
-        if (targetItem) {
-            targetItem.quarter = tr.querySelector('.row-quarter').value;
-            targetItem.equipment_no = tr.querySelector('.row-equip').value;
-            targetItem.activity = tr.querySelector('.row-activity').value;
-            targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
-            targetItem.status = tr.querySelector('.row-status').value;
+            if (canvasB) {
+                budgetChartInstance = new Chart(canvasB.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
+                        datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444'], borderWidth: 0 }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#9ca3af' } } },
+                        cutout: '75%'
+                    }
+                });
+            }
         }
-        editingRowIds.delete(id);
-        applyFilters();
-    }
 
-    function deleteRow(id) {
-        if (confirm("Permanently drop this log item from the database?")) {
-            dataset = dataset.filter(item => item.id !== id);
+        function applyFilters() {
+            const qFilterEl = document.getElementById('filterQuarter');
+            const prefixFilterEl = document.getElementById('filterPrefix');
+            const searchBarEl = document.getElementById('searchBar');
+
+            const qFilter = qFilterEl ? qFilterEl.value : 'All';
+            const prefixFilter = prefixFilterEl ? prefixFilterEl.value : 'All';
+            const searchVal = searchBarEl ? searchBarEl.value.toLowerCase() : '';
+
+            const filtered = dataset.filter(item => {
+                const matchQ = (qFilter === 'All' || item.quarter.includes(qFilter) || qFilter.includes(item.quarter));
+                const matchP = (prefixFilter === 'All' || item.equipment_no.startsWith(prefixFilter));
+                const matchS = (!searchVal || item.activity.toLowerCase().includes(searchVal) || item.equipment_no.toLowerCase().includes(searchVal));
+                
+                return matchQ && matchP && matchS;
+            });
+
+            renderTable(filtered);
+            updateVisualGraphsAndMetrics(filtered); 
+        }
+
+        function updateVisualGraphsAndMetrics(filteredData) {
+            const totalCount = filteredData.length;
+            const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
+            
+            const doneCount = filteredData.filter(i => i.status === 'Done').length;
+            const docsCount = filteredData.filter(i => i.status === 'With Documents').length;
+            const pendingCount = filteredData.filter(i => i.status === 'Pending').length;
+            
+            const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+            const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
+
+            const setNodeText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+            
+            // STRICT UNIQUE TARGETS ONLY
+            setNodeText('metricTotalTracked', totalCount);
+            setNodeText('metricDoneStatus', doneCount);
+            setNodeText('metricWithDocs', docsCount);
+            setNodeText('metricPending', pendingCount);
+            
+            const budgetNode = document.getElementById('metricBudget');
+            if (budgetNode) budgetNode.innerText = '₱' + totalBudget.toLocaleString();
+            
+            setNodeText('metricCompRate', completionRate + '%');
+            const barComp = document.getElementById('barCompRate'); if (barComp) barComp.style.width = completionRate + '%';
+            
+            setNodeText('metricPipeline', pipelineProgress + '%');
+            const barPipe = document.getElementById('barPipeline'); if (barPipe) barPipe.style.width = pipelineProgress + '%';
+
+            // TIMELINE CALCULATIONS
+            const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
+            const segments = {
+                'First Quarter': { done: 0, docs: 0, pending: 0 },
+                'Second Quarter': { done: 0, docs: 0, pending: 0 },
+                'Third Quarter': { done: 0, docs: 0, pending: 0 },
+                'Fourth Quarter': { done: 0, docs: 0, pending: 0 }
+            };
+
+            let bhBudget = 0, bdBudget = 0, crBudget = 0;
+
+            filteredData.forEach(item => {
+                if (segments[item.quarter]) {
+                    if (item.status === 'Done') segments[item.quarter].done++;
+                    else if (item.status === 'With Documents') segments[item.quarter].docs++;
+                    else segments[item.quarter].pending++;
+                }
+
+                // CASE INSENSITIVE DOUGHNUT MATCHING LOGIC
+                const prefix = (item.equipment_no || "").toUpperCase();
+                if (prefix.startsWith('BH')) {
+                    bhBudget += item.budget;
+                } else if (prefix.startsWith('BD')) {
+                    bdBudget += item.budget;
+                } else if (prefix.startsWith('CR')) {
+                    crBudget += item.budget;
+                }
+            });
+
+            if (quarterChartInstance) {
+                quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q].done);
+                quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q].docs);
+                quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q].pending);
+                quarterChartInstance.update();
+            }
+
+            if (budgetChartInstance) {
+                budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget];
+                budgetChartInstance.update();
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('projectTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            const counter = document.getElementById('tableRowCounter');
+            if (counter) counter.innerText = `${data.length} Items Listed`;
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.id = `row-${item.id}`;
+                row.className = "hover:bg-slate-50/40 transition-colors border-b border-gray-100";
+
+                if (editingRowIds.has(item.id)) {
+                    row.innerHTML = `
+                        <td class="p-2"><select class="row-quarter edit-input w-full p-1 text-xs rounded"><option value="First Quarter" ${item.quarter.includes('First')?'selected':''}>Q1</option><option value="Second Quarter" ${item.quarter.includes('Second')?'selected':''}>Q2</option><option value="Third Quarter" ${item.quarter.includes('Third')?'selected':''}>Q3</option><option value="Fourth Quarter" ${item.quarter.includes('Fourth')?'selected':''}>Q4</option></select></td>
+                        <td class="p-2"><input type="text" value="${item.equipment_no}" class="row-equip edit-input w-full p-1 text-xs rounded font-bold uppercase"></td>
+                        <td class="p-2"><input type="text" value="${item.activity}" class="row-activity edit-input w-full p-1 text-xs rounded"></td>
+                        <td class="p-2"><input type="number" value="${item.budget}" class="row-budget edit-input w-full p-1 text-xs text-right rounded"></td>
+                        <td class="p-2"><select class="row-status edit-input w-full p-1 text-xs rounded font-bold"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
+                        <td class="p-2 text-center">
+                            <button onclick="saveEditingRow(${item.id})" class="text-emerald-500 font-bold px-1 mr-2">✓</button>
+                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-400 font-bold px-1">✕</button>
+                        </td>`;
+                } else {
+                    let badgeColor = "bg-amber-500/10 text-amber-500 border-amber-500/20";
+                    if (item.status === 'Done') badgeColor = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+                    if (item.status === 'With Documents') badgeColor = "bg-blue-500/10 text-blue-600 border-blue-500/20";
+
+                    row.innerHTML = `
+                        <td class="p-3 pl-5 text-gray-500 font-medium">${item.quarter}</td>
+                        <td class="p-3 font-bold text-slate-800">${item.equipment_no}</td>
+                        <td class="p-3 text-slate-600">${item.activity}</td>
+                        <td class="p-3 text-right font-semibold text-slate-800">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
+                        <td class="p-3 text-center">
+                            <button onclick="startEditingRow(${item.id})" class="text-gray-400 hover:text-slate-900 mr-2" title="Edit row">📝</button>
+                            <button onclick="deleteRow(${item.id})" class="text-gray-400 hover:text-red-500" title="Delete row">🗑️</button>
+                        </td>`;
+                }
+                tbody.appendChild(row);
+            });
+        }
+
+        function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
+        function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
+        
+        function saveEditingRow(id) {
+            const tr = document.getElementById(`row-${id}`);
+            if (!tr) return;
+            const targetItem = dataset.find(item => item.id === id);
+            if (targetItem) {
+                targetItem.quarter = tr.querySelector('.row-quarter').value;
+                targetItem.equipment_no = tr.querySelector('.row-equip').value;
+                targetItem.activity = tr.querySelector('.row-activity').value;
+                targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
+                targetItem.status = tr.querySelector('.row-status').value;
+            }
+            editingRowIds.delete(id);
             applyFilters();
         }
-    }
 
-    function addNewRow() {
-        const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => o.id)) + 1 : 1;
-        dataset.unshift({ id: nextId, quarter: "First Quarter", equipment_no: "BH-NEW", activity: "Enter details here...", budget: 0, status: "Pending" });
-        editingRowIds.add(nextId);
-        applyFilters();
-    }
-</script>
+        function deleteRow(id) {
+            if (confirm("Permanently drop this log item from the database?")) {
+                dataset = dataset.filter(item => item.id !== id);
+                applyFilters();
+            }
+        }
+
+        function addNewRow() {
+            const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => o.id)) + 1 : 1;
+            dataset.unshift({ id: nextId, quarter: "First Quarter", equipment_no: "BH-NEW", activity: "Enter details here...", budget: 0, status: "Pending" });
+            editingRowIds.add(nextId);
+            applyFilters();
+        }
+    </script>
 </body>
 </html>
