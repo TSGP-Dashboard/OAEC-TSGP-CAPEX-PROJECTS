@@ -175,7 +175,7 @@
 
     </div>
 
-  <script>
+<script>
     // FULL 50-ITEM MASTER DATASET
     let dataset = [
         {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "budget": 0, "status": "Done"},
@@ -234,17 +234,14 @@
     let quarterChartInstance = null;
     let budgetChartInstance = null;
 
-    // Trigger chart generation and initial application data calculations
     window.addEventListener('DOMContentLoaded', () => {
         initCharts();
         applyFilters();
     });
 
-    // CHARTS RENDER INITIALIZER
     function initCharts() {
-        // Find canvas contexts safely. Check common element tags if names vary.
-        const canvasQ = document.getElementById('quarterChart') || document.querySelector('canvas[id*="quarter"]') || document.querySelector('canvas');
-        const canvasB = document.getElementById('budgetChart') || document.querySelector('canvas[id*="budget"]') || document.querySelectorAll('canvas')[1];
+        const canvasQ = document.getElementById('quarterChart');
+        const canvasB = document.getElementById('budgetChart');
         
         if (canvasQ) {
             quarterChartInstance = new Chart(canvasQ.getContext('2d'), {
@@ -286,17 +283,15 @@
         }
     }
 
-    // MASTER INTERACTIVE CORE FILTER CONTROLLER
     function applyFilters() {
-        const qFilterEl = document.getElementById('filterQuarter') || document.querySelector('select');
-        const prefixFilterEl = document.getElementById('filterPrefix') || document.querySelectorAll('select')[1];
-        const searchBarEl = document.getElementById('searchBar') || document.querySelector('input[type="text"]');
+        const qFilterEl = document.getElementById('filterQuarter');
+        const prefixFilterEl = document.getElementById('filterPrefix');
+        const searchBarEl = document.getElementById('searchBar');
 
         const qFilter = qFilterEl ? qFilterEl.value : 'All';
         const prefixFilter = prefixFilterEl ? prefixFilterEl.value : 'All';
         const searchVal = searchBarEl ? searchBarEl.value.toLowerCase() : '';
 
-        // Slice dynamically into an isolated target array context
         const filtered = dataset.filter(item => {
             const matchQ = (qFilter === 'All' || item.quarter.includes(qFilter) || qFilter.includes(item.quarter));
             const matchP = (prefixFilter === 'All' || item.equipment_no.startsWith(prefixFilter));
@@ -309,7 +304,6 @@
         updateVisualGraphsAndMetrics(filtered); 
     }
 
-    // LIVE SEGMENT RECALCULATION ENGINE
     function updateVisualGraphsAndMetrics(filteredData) {
         const totalCount = filteredData.length;
         const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
@@ -321,18 +315,15 @@
         const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
         const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
 
-        // Push values into UI nodes safely
         const setNodeText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
         
-        // Find nodes contextually if standard IDs aren't matching perfectly
-        const totalTrackedNode = document.getElementById('metricTotalTracked') || document.querySelector('.text-2xl, .text-3xl');
-        if (totalTrackedNode) totalTrackedNode.innerText = totalCount;
-
+        // Strictly target elements using their individual unique IDs
+        setNodeText('metricTotalTracked', totalCount);
         setNodeText('metricDoneStatus', doneCount);
         setNodeText('metricWithDocs', docsCount);
         setNodeText('metricPending', pendingCount);
         
-        const budgetNode = document.getElementById('metricBudget') || document.querySelector('h3[id*="Budget"]') || Array.from(document.querySelectorAll('h3, .text-2xl')).find(el => el.innerText.includes('₱'));
+        const budgetNode = document.getElementById('metricBudget');
         if (budgetNode) budgetNode.innerText = '₱' + totalBudget.toLocaleString();
         
         setNodeText('metricCompRate', completionRate + '%');
@@ -376,9 +367,8 @@
         }
     }
 
-    // LIST WORKSPACE INLINE COMPONENT GENERATOR
     function renderTable(data) {
-        const tbody = document.getElementById('projectTableBody') || document.querySelector('tbody');
+        const tbody = document.getElementById('projectTableBody');
         if (!tbody) return;
         tbody.innerHTML = '';
         
