@@ -154,7 +154,10 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/a/macros/omegaasia.ph/s/AKfycbz3M75AgNQ1qrXBvYfS6E_Xzr7s4n8k5VvmF30BjrQQY65xzTR6qB_fUZAR9cEVf1_lSg/exec";
+        // Paste your deployed Google Apps Script URL here:
+        const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+        const SHEET_PATH = "Sheet1"; // Change to match your actual sheet tab name if different
+
         let dataset = [];
         let editingRowIds = new Set();
         let quarterChartInstance = null;
@@ -165,14 +168,15 @@
             loadDatabaseFromAPI();
         });
 
-        // READ: Fetch all rows from your SheetDB API
+        // READ: Fetch rows from your custom App Script via query params
         async function loadDatabaseFromAPI() {
             setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
+                const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
+                const result = await response.json();
                 
-                dataset = data.map(item => ({
+                // standardizing schema mappings dynamically
+                dataset = (result.data || result || []).map(item => ({
                     id: parseInt(item.id) || 0,
                     quarter: item.quarter || '',
                     equipment_no: item.equipment_no || '',
@@ -182,7 +186,7 @@
                     status: item.status || 'Pending'
                 }));
                 
-                setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
                 applyFilters();
             } catch (error) {
                 console.error("Database loading failed:", error);
@@ -339,7 +343,7 @@
             if (counter) counter.innerText = `${data.length} Items`;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-medium">No projects found matching current query</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-medium">No projects found matching current query layout</td></tr>`;
                 return;
             }
 
@@ -373,8 +377,7 @@
                         <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
                         <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
                         <td class="py-1.5 px-3 text-center text-[13px]">
-                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2" title="Edit">📝</button>
-                            <button onclick="deleteRow(${item.id})" class="text-slate-500 hover:text-red-400" title="Delete">🗑️</button>
+                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2" title="Edit/Update parameters temporarily on UI layout">📝</button>
                         </td>`;
                 }
                 tbody.appendChild(row);
@@ -384,72 +387,26 @@
         function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
         function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
         
-        // UPDATE: Send patch updates back to SheetDB API via specific ID matching
-        async function saveEditingRow(id) {
+        function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
 
-            const updatedData = {
-                quarter: tr.querySelector('.row-quarter').value,
-                equipment_no: tr.querySelector('.row-equip').value,
-                activity: tr.querySelector('.row-activity').value,
-                po_reference: tr.querySelector('.row-po').value || '—',
-                budget: parseFloat(tr.querySelector('.row-budget').value) || 0,
-                status: tr.querySelector('.row-status').value
-            };
-
-            setSyncStatus("Saving Changes...", "text-amber-400 bg-amber-500/10");
-
-            try {
-                const response = await fetch(`${API_URL}/id/${id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: updatedData })
-                });
-                
-                if (response.ok) {
-                    const targetItem = dataset.find(item => item.id === id);
-                    if (targetItem) Object.assign(targetItem, updatedData);
-                    editingRowIds.delete(id);
-                    setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
-                    applyFilters();
-                } else {
-                    alert("Failed to write to spreadsheet API cloud registry.");
-                    setSyncStatus("Sync failed", "text-red-400 bg-red-500/10");
-                }
-            } catch (err) {
-                console.error(err);
-                setSyncStatus("Sync error", "text-red-400 bg-red-500/10");
+            const targetItem = dataset.find(item => item.id === id);
+            if (targetItem) {
+                targetItem.quarter = tr.querySelector('.row-quarter').value;
+                targetItem.equipment_no = tr.querySelector('.row-equip').value;
+                targetItem.activity = tr.querySelector('.row-activity').value;
+                targetItem.po_reference = tr.querySelector('.row-po').value || '—';
+                targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
+                targetItem.status = tr.querySelector('.row-status').value;
             }
+            editingRowIds.delete(id);
+            applyFilters();
         }
 
-        // DELETE: Drop a line item entry row from SheetDB
-        async function deleteRow(id) {
-            if (!confirm("Permanently delete this entry from your Google Sheet cloud database?")) return;
-            
-            setSyncStatus("Removing Item...", "text-amber-400 bg-amber-500/10");
-            try {
-                const response = await fetch(`${API_URL}/id/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (response.ok) {
-                    dataset = dataset.filter(item => item.id !== id);
-                    setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
-                    applyFilters();
-                } else {
-                    alert("Could not perform item drop operation on remote API endpoints.");
-                }
-            } catch (err) {
-                console.error(err);
-                setSyncStatus("API Connection Error", "text-red-400 bg-red-500/10");
-            }
-        }
-
-        // CREATE: Generate custom numeric row keys and push directly to sheet database
+        // CREATE: Packages all structural parameters and pushes seamlessly to your script write action
         async function addNewRow() {
-            setSyncStatus("Creating item...", "text-amber-400 bg-amber-500/10");
+            setSyncStatus("Appending to Sheet...", "text-amber-400 bg-amber-500/10");
             
             const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => parseInt(o.id) || 0)) + 1 : 1;
             
@@ -463,24 +420,32 @@
                 status: "Pending"
             };
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [newRowObj] })
-                });
+            // Format query parameters explicitly requested by your script setup
+            const queryParams = new URLSearchParams({
+                action: 'write',
+                path: SHEET_PATH,
+                id: newRowObj.id,
+                quarter: newRowObj.quarter,
+                equipment_no: newRowObj.equipment_no,
+                activity: newRowObj.activity,
+                po_reference: newRowObj.po_reference,
+                budget: newRowObj.budget,
+                status: newRowObj.status
+            });
 
-                if (response.ok) {
-                    dataset.unshift(newRowObj);
-                    editingRowIds.add(nextId);
-                    setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
-                    applyFilters();
-                } else {
-                    alert("API refused insertion of new record into Google Sheets spreadsheet.");
-                }
+            try {
+                // Using 'no-cors' mode alternative or classic redirect handling typical for Apps Script deployments
+                await fetch(`${API_URL}?${queryParams.toString()}`, { method: 'GET', mode: 'no-cors' });
+                
+                // Optimistically adding the local record on visual stack framework
+                dataset.unshift(newRowObj);
+                editingRowIds.add(nextId); // Put row into focus automatically so you can type actual data entries
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
             } catch (err) {
                 console.error(err);
                 setSyncStatus("Insertion error", "text-red-400 bg-red-500/10");
+                alert("Failed to confirm secure record injection onto live Google Sheets cluster.");
             }
         }
     </script>
