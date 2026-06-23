@@ -34,10 +34,10 @@
                 </div>
                 <select id="filterQuarter" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Quarters</option>
-                    <option value="First Quarter">First Quarter (Q1)</option>
-                    <option value="Second Quarter">Second Quarter (Q2)</option>
-                    <option value="Third Quarter">Third Quarter (Q3)</option>
-                    <option value="Fourth Quarter">Fourth Quarter (Q4)</option>
+                    <option value="First Quarter">First Quarter</option>
+                    <option value="Second Quarter">Second Quarter</option>
+                    <option value="Third Quarter">Third Quarter</option>
+                    <option value="Fourth Quarter">Fourth Quarter</option>
                 </select>
                 <select id="filterPrefix" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Types</option>
@@ -154,9 +154,8 @@
     </div>
 
     <script>
-        // 1. Paste your deployed Google Apps Script URL here
-        const API_URL = "https://script.google.com/macros/s/AKfycbza5aknWQDAlNOoHGFEZpJhdM7UKjP5c-0fonhxmGDlFZCW94cf5OjrfukvvPEUuww9OQ/exec";
-        // 2. Tab name on your spreadsheet
+        // Paste your deployed Google Apps Script URL here
+        const API_URL = "https://script.google.com/macros/s/AKfycbza5aknWQDAlNOoHGFEZpJhdM7UKjP5c-0fonhxmGDlFZCW94cf5OjrfukvvPEUuww9OQ/exec"; 
         const SHEET_PATH = "Sheet1"; 
 
         let dataset = [];
@@ -169,27 +168,36 @@
             loadDatabaseFromAPI();
         });
 
-        // READ: Fetch rows and forcefully sanitize the string formatting on currency values
+        // READ: Fetch rows and dynamically normalize headers to lowercase
         async function loadDatabaseFromAPI() {
             setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
             try {
                 const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
                 const result = await response.json();
                 
-                dataset = (result.data || result || []).map(item => {
-                    let cleanedBudget = item.budget;
+                const rawArray = result.data || result || [];
+                
+                dataset = rawArray.map(item => {
+                    // Normalize spreadsheet capitalized keys to lowercase matching keys
+                    let target = {};
+                    Object.keys(item).forEach(key => {
+                        let normalizedKey = key.toLowerCase().trim().replace('.', '').replace(' ', '_');
+                        target[normalizedKey] = item[key];
+                    });
+
+                    let cleanedBudget = target.budget || target.budget_amount || 0;
                     if (typeof cleanedBudget === 'string') {
                         cleanedBudget = cleanedBudget.replace(/[^0-9.]/g, ''); 
                     }
                     
                     return {
-                        id: parseInt(item.id) || 0,
-                        quarter: item.quarter || '',
-                        equipment_no: item.equipment_no || '',
-                        activity: item.activity || '',
-                        po_reference: item.po_reference || '—',
+                        id: parseInt(target.id) || 0,
+                        quarter: target.quarter || '',
+                        equipment_no: target.equipment_no || target.asset_no || '',
+                        activity: target.activity || target.planned_activity_action_details || '',
+                        po_reference: target.po_reference || target.document___po_ref || '—',
                         budget: parseFloat(cleanedBudget) || 0,
-                        status: item.status || 'Pending'
+                        status: target.status || 'Pending'
                     };
                 });
                 
@@ -259,8 +267,8 @@
             const searchVal = document.getElementById('searchBar')?.value.toLowerCase() || '';
 
             const filtered = dataset.filter(item => {
-                const matchQ = (qFilter === 'All' || item.quarter.includes(qFilter));
-                const matchP = (prefixFilter === 'All' || (item.equipment_no || '').startsWith(prefixFilter));
+                const matchQ = (qFilter === 'All' || item.quarter.toLowerCase().trim() === qFilter.toLowerCase().trim());
+                const matchP = (prefixFilter === 'All' || (item.equipment_no || '').toUpperCase().startsWith(prefixFilter));
                 
                 const poString = (item.po_reference || "").toLowerCase();
                 const activityString = (item.activity || "").toLowerCase();
@@ -282,9 +290,9 @@
             const totalCount = filteredData.length;
             const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
             
-            const doneCount = filteredData.filter(i => i.status === 'Done').length;
-            const docsCount = filteredData.filter(i => i.status === 'With Documents').length;
-            const pendingCount = filteredData.filter(i => i.status === 'Pending').length;
+            const doneCount = filteredData.filter(i => i.status.toLowerCase() === 'done').length;
+            const docsCount = filteredData.filter(i => i.status.toLowerCase() === 'with documents' || i.status.toLowerCase() === 'with docs').length;
+            const pendingCount = filteredData.filter(i => i.status.toLowerCase() === 'pending').length;
             
             const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
             const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
@@ -307,19 +315,22 @@
 
             const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
             const segments = {
-                'First Quarter': { done: 0, docs: 0, pending: 0 },
-                'Second Quarter': { done: 0, docs: 0, pending: 0 },
-                'Third Quarter': { done: 0, docs: 0, pending: 0 },
-                'Fourth Quarter': { done: 0, docs: 0, pending: 0 }
+                'first quarter': { done: 0, docs: 0, pending: 0 },
+                'second quarter': { done: 0, docs: 0, pending: 0 },
+                'third quarter': { done: 0, docs: 0, pending: 0 },
+                'fourth quarter': { done: 0, docs: 0, pending: 0 }
             };
 
             let bhBudget = 0, bdBudget = 0, crBudget = 0;
 
             filteredData.forEach(item => {
-                if (segments[item.quarter]) {
-                    if (item.status === 'Done') segments[item.quarter].done++;
-                    else if (item.status === 'With Documents') segments[item.quarter].docs++;
-                    else segments[item.quarter].pending++;
+                let normQ = item.quarter.toLowerCase().trim();
+                let normStatus = item.status.toLowerCase().trim();
+                
+                if (segments[normQ]) {
+                    if (normStatus === 'done') segments[normQ].done++;
+                    else if (normStatus === 'with documents' || normStatus === 'with docs') segments[normQ].docs++;
+                    else segments[normQ].pending++;
                 }
 
                 const prefix = (item.equipment_no || "").toUpperCase();
@@ -329,9 +340,9 @@
             });
 
             if (quarterChartInstance) {
-                quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q].done);
-                quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q].docs);
-                quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q].pending);
+                quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q.toLowerCase()]?.done || 0);
+                quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q.toLowerCase()]?.docs || 0);
+                quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q.toLowerCase()]?.pending || 0);
                 quarterChartInstance.update();
             }
 
@@ -373,8 +384,8 @@
                         </td>`;
                 } else {
                     let badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-                    if (item.status === 'Done') badgeColor = "bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20";
-                    if (item.status === 'With Documents') badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                    if (item.status.toLowerCase() === 'done') badgeColor = "bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20";
+                    if (item.status.toLowerCase() === 'with documents' || item.status.toLowerCase() === 'with docs') badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
 
                     row.innerHTML = `
                         <td class="py-1.5 px-3 pl-4 text-slate-400 font-medium">${item.quarter.replace(' Quarter', '')}</td>
@@ -394,7 +405,6 @@
         function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
         function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
         
-        // SAVE & BROADCAST EDITS: Sends cleaned numbers directly up to your Apps Script trigger
         async function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
@@ -437,7 +447,6 @@
             }
         }
 
-        // CREATE: Add new default structural records to your cloud sheet spreadsheet directly
         async function addNewRow() {
             setSyncStatus("Appending to Sheet...", "text-amber-400 bg-amber-500/10");
             
