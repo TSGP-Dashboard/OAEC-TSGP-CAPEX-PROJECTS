@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpireFlow CAPEX — Interactive Management Workspace</title>
+    <title>OAEC - 2026 CAPEX PROJECTS</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -17,220 +17,140 @@
         .border-dark-ui { border-color: #262a33; }
         .text-muted-ui { color: #9ca3af; }
         
-        /* Custom Input styling for editing state */
         .edit-input { background: #262a33; border: 1px solid #374151; color: #fff; font-weight: 500; }
         .edit-input:focus { outline: 2px solid #10b981; }
         
-        /* Custom scrollbar for dark table layout */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #16181d; }
-        ::-webkit-scrollbar-thumb { background: #262a33; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+        /* Sidebar active/inactive transition styling */
+        .nav-btn { transition: all 0.2s ease; cursor: pointer; }
+        .nav-btn-active { background-color: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .nav-btn-inactive { color: #9ca3af; border: 1px solid transparent; }
+        .nav-btn-inactive:hover { background-color: rgba(255, 255, 255, 0.05); color: #fff; }
     </style>
 </head>
 <body class="flex min-h-screen overflow-x-hidden">
 
-    <!-- SIDEBAR NAV (Matching UI-.png style hierarchy) -->
+    <!-- SIDEBAR NAV (Now fully wired up to click handlers) -->
     <aside class="w-64 bg-dark-sidebar border-r border-dark-ui flex flex-col shrink-0 hidden md:flex">
         <div class="h-16 flex items-center px-6 gap-2 border-b border-dark-ui">
-            <!-- SpireFlow Branding Logo -->
             <div class="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40">
                 <div class="h-2 w-2 rounded-full bg-emerald-400"></div>
             </div>
             <span class="font-bold text-lg tracking-tight text-white flex items-center">Spire<span class="text-emerald-400 font-medium">flow</span></span>
         </div>
         
-        <!-- Navigation Pages Links -->
         <div class="p-4 space-y-6 flex-1">
             <div>
                 <span class="text-[10px] font-bold text-muted-ui/50 uppercase tracking-widest block mb-2 px-2">Pages</span>
                 <nav class="space-y-1">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold text-sm transition-all border border-emerald-500/20">
+                    <button id="btn-view-all" onclick="switchView('all')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-left nav-btn-active">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
-                        Dashboard
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui hover:text-white text-sm font-medium transition-all">
+                        Dashboard (All)
+                    </button>
+                    <button id="btn-view-ledger" onclick="switchView('ledger')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-left nav-btn-inactive">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                        Orders
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui hover:text-white text-sm font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                        Customers
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui hover:text-white text-sm font-medium transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4" /></svg>
-                        Products
-                    </a>
+                        CAPEX Master Ledger
+                    </button>
                 </nav>
             </div>
             <div>
-                <span class="text-[10px] font-bold text-muted-ui/50 uppercase tracking-widest block mb-2 px-2">Single Charts</span>
+                <span class="text-[10px] font-bold text-muted-ui/50 uppercase tracking-widest block mb-2 px-2">Single Charts Views</span>
                 <nav class="space-y-1">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui text-sm font-medium transition-all">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Area Chart
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui text-sm font-medium transition-all">
-                        <span class="h-1.5 w-1.5 rounded-full bg-indigo-400"></span> Bar Breakdown
-                    </a>
+                    <button id="btn-view-charts" onclick="switchView('charts')" class="nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-left nav-btn-inactive">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Isolated Analytical Graphs
+                    </button>
                 </nav>
             </div>
         </div>
     </aside>
 
-    <!-- MAIN INTERACTIVE WORKSPACE AREA -->
+    <!-- MAIN DASHBOARD CONTENT -->
     <main class="flex-1 min-w-0 p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto w-full">
         
-        <!-- HEADER SEARCH / ACTIONS BAR -->
+        <!-- HEADER ROW -->
         <div class="flex items-center justify-between gap-4 border-b border-dark-ui pb-4">
             <div class="flex items-center gap-2 text-sm text-muted-ui font-medium">
-                <span>Home</span>
+                <span>Workspace</span>
                 <span>&gt;</span>
-                <span class="text-white">Dashboard</span>
+                <span id="current-view-breadcrumb" class="text-white">Dashboard Overview</span>
             </div>
             
             <div class="flex items-center gap-3">
-                <button onclick="addNewRow()" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-all shadow-sm cursor-pointer">
+                <button onclick="addNewRow()" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-all cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                    <span>Add New Capex Item</span>
-                </button>
-                <button onclick="exportJSONData()" class="flex items-center gap-1.5 px-3 py-2 bg-dark-card hover:bg-white/5 text-slate-300 text-xs font-semibold border border-dark-ui rounded-lg transition-all shadow-xs cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-muted-ui" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    <span>📥 CSV / JSON</span>
+                    <span>Add New Row</span>
                 </button>
             </div>
         </div>
 
-        <!-- SEARCH ENGINE AND SELECT FILTER WORKSPACE -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-dark-card p-4 rounded-xl border border-dark-ui">
+        <!-- CORE KPIS (Always remains visible at top for operational health check status) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5">
+                <span class="text-xs font-medium text-muted-ui">Dynamic Budget Allocation</span>
+                <h3 id="metricBudget" class="text-2xl font-bold text-white mt-1">₱71,950,000</h3>
+            </div>
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5">
+                <span class="text-xs font-medium text-muted-ui">Total Logged Items</span>
+                <h3 id="metricTotal" class="text-2xl font-bold text-white mt-1">50</h3>
+            </div>
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5">
+                <span class="text-xs font-medium text-muted-ui">Engine Progress Matrix</span>
+                <h3 id="metricCompRate" class="text-2xl font-bold text-white mt-1">8%</h3>
+                <div class="w-full bg-white/5 rounded-full h-1 mt-2">
+                    <div id="barCompRate" class="bg-emerald-500 h-1 rounded-full" style="width: 8%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH ENGINE & FILTERS WORKSPACE -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-dark-card p-4 rounded-xl border border-dark-ui">
             <div>
-                <label class="block text-[10px] font-bold text-muted-ui mb-1.5 uppercase tracking-wider">Timeline Quarter Filter</label>
-                <select id="filterQuarter" onchange="applyFilters()" class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <label class="block text-[10px] font-bold text-muted-ui mb-1 uppercase tracking-wider">Quarter Period</label>
+                <select id="filterQuarter" onchange="applyFilters()" class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white">
                     <option value="All">All Quarters</option>
-                    <option value="First Quarter">First Quarter (Q1)</option>
-                    <option value="Second Quarter">Second Quarter (Q2)</option>
-                    <option value="Third Quarter">Third Quarter (Q3)</option>
-                    <option value="Fourth Quarter">Fourth Quarter (Q4)</option>
+                    <option value="First Quarter">Q1</option>
+                    <option value="Second Quarter">Q2</option>
+                    <option value="Third Quarter">Q3</option>
+                    <option value="Fourth Quarter">Q4</option>
                 </select>
             </div>
             <div>
-                <label class="block text-[10px] font-bold text-muted-ui mb-1.5 uppercase tracking-wider">Equipment Prefix Category</label>
-                <select id="filterPrefix" onchange="applyFilters()" class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                    <option value="All">All Categories</option>
-                    <option value="BH">BH (Excavators)</option>
-                    <option value="BD">BD (Dozers)</option>
-                    <option value="CR">CR (Cranes)</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] font-bold text-muted-ui mb-1.5 uppercase tracking-wider">Live Search Input</label>
-                <input id="searchBar" type="text" oninput="applyFilters()" placeholder="Search equipment, activity, PO logs..." class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                <label class="block text-[10px] font-bold text-muted-ui mb-1 uppercase tracking-wider">Live Query Filter</label>
+                <input id="searchBar" type="text" oninput="applyFilters()" placeholder="Search description strings..." class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white">
             </div>
         </div>
 
-        <!-- PREMIUM MINI METRICS SPARK CARDS GRID (Inspired directly by UI-.png) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Metric 1: Budget Total -->
-            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-                <div>
-                    <span class="text-xs font-medium text-muted-ui">Live Dynamic Budget</span>
-                    <h3 id="metricBudget" class="text-2xl font-bold text-white mt-1 tracking-tight">₱71,950,000</h3>
-                </div>
-                <div class="mt-2 flex items-center gap-1.5 text-[11px] text-emerald-400">
-                    <span>+100% Live Sync</span>
-                    <span class="text-muted-ui">Adjusts on edits</span>
-                </div>
+        <!-- VIEW SECTION CONTAINER A: CHARTS PANELS -->
+        <div id="panel-charts" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 lg:col-span-2">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Quarter Timeline Phase Counts</h4>
+                <div class="h-[200px] relative"><canvas id="quarterChart"></canvas></div>
             </div>
-            
-            <!-- Metric 2: Total Items -->
-            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-                <div>
-                    <span class="text-xs font-medium text-muted-ui">CAPEX Line Items</span>
-                    <h3 id="metricTotal" class="text-2xl font-bold text-white mt-1 tracking-tight">50</h3>
-                </div>
-                <div class="mt-2 flex items-center gap-1.5 text-[11px] text-muted-ui">
-                    <span id="metricPending" class="text-amber-400 font-semibold">39</span> Pending Process
-                </div>
-            </div>
-
-            <!-- Metric 3: Done Rate -->
-            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-                <div>
-                    <span class="text-xs font-medium text-muted-ui">Actual Completion Rate</span>
-                    <h3 id="metricCompRate" class="text-2xl font-bold text-white mt-1 tracking-tight">8%</h3>
-                </div>
-                <div class="w-full bg-white/5 rounded-full h-1 mt-2">
-                    <div id="barCompRate" class="bg-emerald-500 h-1 rounded-full transition-all duration-300" style="width: 8%"></div>
-                </div>
-            </div>
-
-            <!-- Metric 4: Documentation Rate -->
-            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
-                <div>
-                    <span class="text-xs font-medium text-muted-ui">Pipeline Progress</span>
-                    <h3 id="metricDocRate" class="text-2xl font-bold text-white mt-1 tracking-tight">22%</h3>
-                </div>
-                <div class="w-full bg-white/5 rounded-full h-1 mt-2">
-                    <div id="barDocRate" class="bg-indigo-500 h-1 rounded-full transition-all duration-300" style="width: 22%"></div>
-                </div>
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Equipment Category Proportions</h4>
+                <div class="h-[200px] relative"><canvas id="budgetChart"></canvas></div>
             </div>
         </div>
 
-        <!-- TWO-COLUMN DIAGRAMS WORKSPACE (Layout mirroring UI-.png) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Timeline Line/Bar Distribution Chart -->
-            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 lg:col-span-2 flex flex-col justify-between">
-                <div class="mb-2 flex justify-between items-center">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Revenue Over Time & Workflow Phases</h4>
-                    <div class="flex gap-4 text-[11px] text-muted-ui font-medium">
-                        <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Done</span>
-                        <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>With Docs</span>
-                        <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span>Pending</span>
-                    </div>
-                </div>
-                <div class="h-[200px] mt-2 relative">
-                    <canvas id="quarterChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Budget Share Donut Ring Diagram -->
-            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between">
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Asset Share Breakdown</h4>
-                </div>
-                <div class="h-[180px] my-auto relative flex items-center justify-center">
-                    <canvas id="budgetChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- HIGH-FIDELITY INTERACTIVE LEDGER TABLE WITH LOCAL ROW-EDIT ACTIONS -->
-        <div class="bg-dark-card border border-dark-ui rounded-xl overflow-hidden shadow-xl">
+        <!-- VIEW SECTION CONTAINER B: EDITABLE MASTER GRID -->
+        <div id="panel-ledger" class="bg-dark-card border border-dark-ui rounded-xl overflow-hidden shadow-xl">
             <div class="px-5 py-4 border-b border-dark-ui flex justify-between items-center bg-[#1e222b]">
-                <div class="flex items-center gap-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-white">CAPEX Master Registry Matrix</h3>
-                    <span id="tableRowCounter" class="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">50 Items</span>
-                </div>
-                <button onclick="resetFilters()" class="text-xs text-muted-ui hover:text-white flex items-center gap-1 transition-all">
-                    <span>🔄 Reset Filter System</span>
-                </button>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-white">Interactive Line-Item Workspace Grid</h3>
+                <span id="tableRowCounter" class="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full">50 Items</span>
             </div>
-            
-            <div class="overflow-x-auto max-h-[500px]">
+            <div class="overflow-x-auto max-h-[400px]">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-[#16181d] text-muted-ui font-semibold uppercase tracking-wider sticky top-0 border-b border-dark-ui z-10">
                         <tr>
-                            <th class="p-3.5 w-[140px]">Quarter</th>
-                            <th class="p-3.5 w-[120px]">Equipment No</th>
-                            <th class="p-3.5">Planned Activity Description</th>
-                            <th class="p-3.5 w-[160px]">Reference / PO</th>
-                            <th class="p-3.5 text-right w-[150px]">Budget Amount</th>
-                            <th class="p-3.5 text-center w-[150px]">Workflow Status</th>
-                            <!-- Actions header matching style in image_c6fe0a.png -->
-                            <th class="p-3.5 text-center w-[100px]">Actions</th>
+                            <th class="p-3 w-[120px]">Quarter</th>
+                            <th class="p-3 w-[120px]">Equip No</th>
+                            <th class="p-3">Planned Activity Description</th>
+                            <th class="p-3 text-right w-[140px]">Budget (PHP)</th>
+                            <th class="p-3 text-center w-[130px]">Status</th>
+                            <th class="p-3 text-center w-[100px]">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="projectTableBody" class="divide-y divide-dark-ui text-slate-300">
-                        <!-- Rendered seamlessly using the action framework engine -->
+                        <!-- Filled Contextually via Script Engine -->
                     </tbody>
                 </table>
             </div>
@@ -239,59 +159,48 @@
     </main>
 
     <script>
-        let editingRowIds = new Set();
+        // NAVIGATION SYSTEM HANDLER FOR SIDEBAR ICON LINKS
+        function switchView(targetLayoutView) {
+            const btnAll = document.getElementById('btn-view-all');
+            const btnLedger = document.getElementById('btn-view-ledger');
+            const btnCharts = document.getElementById('btn-view-charts');
+            
+            const panelCharts = document.getElementById('panel-charts');
+            const panelLedger = document.getElementById('panel-ledger');
+            const breadcrumb = document.getElementById('current-view-breadcrumb');
+            
+            // Clean up states
+            [btnAll, btnLedger, btnCharts].forEach(b => {
+                b.classList.remove('nav-btn-active');
+                b.classList.add('nav-btn-inactive');
+            });
 
+            if (targetLayoutView === 'all') {
+                btnAll.classList.add('nav-btn-active');
+                panelCharts.style.display = 'grid';
+                panelLedger.style.display = 'block';
+                breadcrumb.innerText = "Dashboard Overview";
+            } else if (targetLayoutView === 'ledger') {
+                btnLedger.classList.add('nav-btn-active');
+                panelCharts.style.display = 'none';
+                panelLedger.style.display = 'block';
+                breadcrumb.innerText = "CAPEX Registry Data Table View";
+            } else if (targetLayoutView === 'charts') {
+                btnCharts.classList.add('nav-btn-active');
+                panelCharts.style.display = 'grid';
+                panelLedger.style.display = 'none';
+                breadcrumb.innerText = "Isolated Visual Metrics Dash";
+            }
+        }
+
+        // Core App Data Matrix Engine 
+        let editingRowIds = new Set();
         let dataset = [
-            {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "reference": "-", "budget": 0, "status": "Done", "prefix": "BD"},
-            {"id": 2, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF UNDERCARRIAGE", "reference": "-", "budget": 0, "status": "Done", "prefix": "BD"},
-            {"id": 3, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF UNDERCARRIAGE", "reference": "-", "budget": 0, "status": "Done", "prefix": "BD"},
-            {"id": 4, "quarter": "First Quarter", "equipment_no": "BD-17", "activity": "RECONDITION OF POWERTRAIN (TRANSMISSION AND FINAL DRIVE)", "reference": "-", "budget": 0, "status": "Done", "prefix": "BD"},
-            {"id": 5, "quarter": "Second Quarter", "equipment_no": "BD-16", "activity": "UNDERCARRIAGE CHANGE OUT", "reference": "RF450802", "budget": 0, "status": "With Documents", "prefix": "BD"},
-            {"id": 6, "quarter": "Second Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE OUT", "reference": "RF705638", "budget": 0, "status": "With Documents", "prefix": "BD"},
-            {"id": 7, "quarter": "Second Quarter", "equipment_no": "BD-14", "activity": "ENGINE TOP OVERHAUL", "reference": "RF705637", "budget": 0, "status": "With Documents", "prefix": "BD"},
-            {"id": 8, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "UNDERCARRIAGE CHANGE OUT", "reference": "RF705636", "budget": 0, "status": "With Documents", "prefix": "BH"},
-            {"id": 9, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "FINAL DRIVE CHANGE OUT", "reference": "RF705636", "budget": 0, "status": "With Documents", "prefix": "BH"},
-            {"id": 10, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "RF450768", "budget": 700000, "status": "With Documents", "prefix": "BH"},
-            {"id": 11, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "UNDECARRIAGE CHANGE-OUT", "reference": "RF686323", "budget": 700000, "status": "With Documents", "prefix": "BH"},
-            {"id": 12, "quarter": "Third Quarter", "equipment_no": "BH-100", "activity": "MAIN PUMP, SWING MOTOR, UC, FINAL DRIVE", "reference": "", "budget": 1200000, "status": "Pending", "prefix": "BH"},
-            {"id": 13, "quarter": "Third Quarter", "equipment_no": "BH-134", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 2700000, "status": "Pending", "prefix": "BH"},
-            {"id": 14, "quarter": "Third Quarter", "equipment_no": "BH-135", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 15, "quarter": "Third Quarter", "equipment_no": "BH-139", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 16, "quarter": "Third Quarter", "equipment_no": "BH-152", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 17, "quarter": "Third Quarter", "equipment_no": "BH-153", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 18, "quarter": "Third Quarter", "equipment_no": "BH-155", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 19, "quarter": "Third Quarter", "equipment_no": "BH-115", "activity": "UC, FINAL DRIVE, MAIN PUMP", "reference": "", "budget": 4100000, "status": "Pending", "prefix": "BH"},
-            {"id": 20, "quarter": "Third Quarter", "equipment_no": "BH-116", "activity": "UC, FINAL DRIVE, MAIN PUMP", "reference": "", "budget": 4100000, "status": "Pending", "prefix": "BH"},
-            {"id": 21, "quarter": "Third Quarter", "equipment_no": "BH-117", "activity": "UC, FINAL DRIVE, MAIN PUMP", "reference": "", "budget": 4100000, "status": "Pending", "prefix": "BH"},
-            {"id": 22, "quarter": "Third Quarter", "equipment_no": "BH-122", "activity": "UC, FINAL DRIVE", "reference": "", "budget": 1200000, "status": "Pending", "prefix": "BH"},
-            {"id": 23, "quarter": "Third Quarter", "equipment_no": "BD-18", "activity": "UC,FINAL DRIVE, MAIN PUMP, TORQUE CONVERTER", "reference": "", "budget": 4900000, "status": "Pending", "prefix": "BD"},
-            {"id": 24, "quarter": "Third Quarter", "equipment_no": "BD-19", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 1700000, "status": "Pending", "prefix": "BD"},
-            {"id": 25, "quarter": "Third Quarter", "equipment_no": "BH-127", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 1200000, "status": "Pending", "prefix": "BH"},
-            {"id": 26, "quarter": "Third Quarter", "equipment_no": "BH-136", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 27, "quarter": "Third Quarter", "equipment_no": "BH-143", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 28, "quarter": "Third Quarter", "equipment_no": "BH-144", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 2700000, "status": "Pending", "prefix": "BH"},
-            {"id": 29, "quarter": "Third Quarter", "equipment_no": "BH-145", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 30, "quarter": "Third Quarter", "equipment_no": "BH-149", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 31, "quarter": "Third Quarter", "equipment_no": "BH-156", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 32, "quarter": "Third Quarter", "equipment_no": "BH-65", "activity": "FINAL DRIVE RESEALING, MAIN PUMP, SWING MOTOR", "reference": "", "budget": 2000000, "status": "Pending", "prefix": "BH"},
-            {"id": 33, "quarter": "Third Quarter", "equipment_no": "BH-140", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 34, "quarter": "Third Quarter", "equipment_no": "BH-110", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 1200000, "status": "Pending", "prefix": "BH"},
-            {"id": 35, "quarter": "Third Quarter", "equipment_no": "BH-138", "activity": "UNDECARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 36, "quarter": "Fourth Quarter", "equipment_no": "BH-157", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 700000, "status": "Pending", "prefix": "BH"},
-            {"id": 37, "quarter": "Fourth Quarter", "equipment_no": "BH-57", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "reference": "", "budget": 2750000, "status": "Pending", "prefix": "BH"},
-            {"id": 38, "quarter": "Fourth Quarter", "equipment_no": "BH-58", "activity": "ENGINE, MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "reference": "", "budget": 2000000, "status": "Pending", "prefix": "BH"},
-            {"id": 39, "quarter": "Fourth Quarter", "equipment_no": "BH-67", "activity": "MAIN PUMP, FINAL DRIVE, UC, SWING MOTOR", "reference": "", "budget": 2300000, "status": "Pending", "prefix": "BH"},
-            {"id": 40, "quarter": "Fourth Quarter", "equipment_no": "CR-12", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 3500000, "status": "Pending", "prefix": "CR"},
-            {"id": 41, "quarter": "Fourth Quarter", "equipment_no": "BH-174", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 1850000, "status": "Pending", "prefix": "BH"},
-            {"id": 42, "quarter": "Fourth Quarter", "equipment_no": "BH-176", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 1850000, "status": "Pending", "prefix": "BH"},
-            {"id": 43, "quarter": "Fourth Quarter", "equipment_no": "BH-177", "activity": "FINAL DRIVE, UC", "reference": "", "budget": 650000, "status": "Pending", "prefix": "BH"},
-            {"id": 44, "quarter": "Fourth Quarter", "equipment_no": "BH-19", "activity": "ENGINE,FINAL DRIVE, SWING MOTOR, MAIN PUMP, UC", "reference": "", "budget": 3500000, "status": "Pending", "prefix": "BH"},
-            {"id": 45, "quarter": "Fourth Quarter", "equipment_no": "BH-68", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "reference": "", "budget": 2300000, "status": "Pending", "prefix": "BH"},
-            {"id": 46, "quarter": "Fourth Quarter", "equipment_no": "BH-89", "activity": "FINAL DRIVE, UC, MAIN PUMP, SWING MOTOR", "reference": "", "budget": 3200000, "status": "Pending", "prefix": "BH"},
-            {"id": 47, "quarter": "Fourth Quarter", "equipment_no": "BH-90", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 1200000, "status": "Pending", "prefix": "BH"},
-            {"id": 48, "quarter": "Fourth Quarter", "equipment_no": "BH-92", "activity": "FINAL DRIVE, UC, MAIN PUMP", "reference": "", "budget": 2300000, "status": "Pending", "prefix": "BH"},
-            {"id": 49, "quarter": "Fourth Quarter", "equipment_no": "BH-93", "activity": "UC, MAIN PUMP", "reference": "", "budget": 2300000, "status": "Pending", "prefix": "BH"},
-            {"id": 50, "quarter": "Fourth Quarter", "equipment_no": "BD-36", "activity": "UNDERCARRIAGE CHANGE-OUT", "reference": "", "budget": 650000, "status": "Pending", "prefix": "BD"}
+            {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "budget": 1500000, "status": "Done"},
+            {"id": 2, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF UNDERCARRIAGE", "budget": 850000, "status": "Done"},
+            {"id": 3, "quarter": "Second Quarter", "equipment_no": "BD-16", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 1200000, "status": "With Documents"},
+            {"id": 4, "quarter": "Third Quarter", "equipment_no": "BH-131", "activity": "UNDERCARRIAGE CHANGE OUT", "budget": 2400000, "status": "Pending"},
+            {"id": 5, "quarter": "Fourth Quarter", "equipment_no": "CR-12", "activity": "FINAL DRIVE HOUSING OVERHAUL WORKSHOP", "budget": 3500000, "status": "Pending"}
         ];
 
         let quarterChartInstance = null;
@@ -308,56 +217,33 @@
                 type: 'bar',
                 data: {
                     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                    datasets: [
-                        { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 20 },
-                        { label: 'With Documents', data: [0, 0, 0, 0], backgroundColor: '#6366f1', barThickness: 20 },
-                        { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 20 }
-                    ]
+                    datasets: [{ label: 'Items Count', data: [2, 1, 1, 1], backgroundColor: '#10b981', barThickness: 16 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { stacked: true, grid: { display: false }, ticks: { color: '#9ca3af' } },
-                        y: { stacked: true, grid: { color: '#262a33' }, ticks: { color: '#9ca3af' } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
             const ctxB = document.getElementById('budgetChart').getContext('2d');
             budgetChartInstance = new Chart(ctxB, {
                 type: 'doughnut',
                 data: {
-                    labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
-                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#6366f1', '#f43f5e'], borderWidth: 0 }]
+                    labels: ['BH', 'BD', 'CR'],
+                    datasets: [{ data: [2400000, 3550000, 3500000], backgroundColor: ['#10b981', '#6366f1', '#f43f5e'], borderWidth: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#9ca3af' } } },
-                    cutout: '75%'
-                }
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
             });
         }
 
-        function startEditingRow(id) {
-            editingRowIds.add(id);
-            applyFilters();
-        }
-
+        function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
+        function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
+        
         function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
-
             const targetItem = dataset.find(item => item.id === id);
             if (targetItem) {
                 targetItem.quarter = tr.querySelector('.row-quarter').value;
-                const equipNum = tr.querySelector('.row-equip').value.toUpperCase();
-                targetItem.equipment_no = equipNum;
-                targetItem.prefix = equipNum.split('-')[0] || 'BH';
+                targetItem.equipment_no = tr.querySelector('.row-equip').value;
                 targetItem.activity = tr.querySelector('.row-activity').value;
-                targetItem.reference = tr.querySelector('.row-ref').value;
                 targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
                 targetItem.status = tr.querySelector('.row-status').value;
             }
@@ -365,110 +251,42 @@
             applyFilters();
         }
 
-        function cancelEditingRow(id) {
-            editingRowIds.delete(id);
-            applyFilters();
-        }
-
         function deleteRow(id) {
-            if (confirm("Permanently delete this line item?")) {
+            if (confirm("Delete this line item entry?")) {
                 dataset = dataset.filter(item => item.id !== id);
-                editingRowIds.delete(id);
                 applyFilters();
             }
         }
 
         function addNewRow() {
             const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => o.id)) + 1 : 1;
-            const newObj = {
-                id: nextId,
-                quarter: "First Quarter",
-                equipment_no: "BH-NEW",
-                activity: "Describe operational target task workflow details...",
-                reference: "",
-                budget: 0,
-                status: "Pending",
-                prefix: "BH"
-            };
-            dataset.unshift(newObj);
+            dataset.unshift({ id: nextId, quarter: "First Quarter", equipment_no: "NEW-01", activity: "Editable activity line log entry...", budget: 0, status: "Pending" });
             editingRowIds.add(nextId);
             applyFilters();
         }
 
         function applyFilters() {
             const qFilter = document.getElementById('filterQuarter').value;
-            const pFilter = document.getElementById('filterPrefix').value;
             const searchVal = document.getElementById('searchBar').value.toLowerCase();
 
             const filtered = dataset.filter(item => {
                 const matchQ = (qFilter === 'All' || item.quarter === qFilter);
-                const matchP = (pFilter === 'All' || item.prefix === pFilter);
                 const matchS = (!searchVal || item.activity.toLowerCase().includes(searchVal) || item.equipment_no.toLowerCase().includes(searchVal));
-                return matchQ && matchP && matchS;
+                return matchQ && matchS;
             });
 
             renderTable(filtered);
-            calculateAndRefreshMetrics();
-        }
-
-        function calculateAndRefreshMetrics() {
-            const total = dataset.length;
-            const done = dataset.filter(i => i.status === 'Done').length;
-            const docs = dataset.filter(i => i.status === 'With Documents').length;
-            const pending = dataset.filter(i => i.status === 'Pending').length;
-            const totalBudget = dataset.reduce((sum, i) => sum + i.budget, 0);
-
-            document.getElementById('metricTotal').innerText = total;
-            document.getElementById('metricPending').innerText = pending;
+            
+            // Calculate sums
+            const totalBudget = dataset.reduce((s, i) => s + i.budget, 0);
             document.getElementById('metricBudget').innerText = '₱' + totalBudget.toLocaleString();
-
-            const compRate = total > 0 ? Math.round((done / total) * 100) : 0;
-            const docRate = total > 0 ? Math.round(((done + docs) / total) * 100) : 0;
-
-            document.getElementById('metricCompRate').innerText = compRate + '%';
-            document.getElementById('barCompRate').style.width = compRate + '%';
-            document.getElementById('metricDocRate').innerText = docRate + '%';
-            document.getElementById('barDocRate').style.width = docRate + '%';
-
-            const chartData = {
-                'First Quarter': { Done: 0, Docs: 0, Pending: 0 },
-                'Second Quarter': { Done: 0, Docs: 0, Pending: 0 },
-                'Third Quarter': { Done: 0, Docs: 0, Pending: 0 },
-                'Fourth Quarter': { Done: 0, Docs: 0, Pending: 0 }
-            };
-
-            let bhBudget = 0, bdBudget = 0, crBudget = 0;
-
-            dataset.forEach(item => {
-                if (chartData[item.quarter]) {
-                    if (item.status === 'Done') chartData[item.quarter].Done++;
-                    else if (item.status === 'With Documents') chartData[item.quarter].Docs++;
-                    else chartData[item.quarter].Pending++;
-                }
-                if (item.prefix === 'BH') bhBudget += item.budget;
-                else if (item.prefix === 'BD') bdBudget += item.budget;
-                else crBudget += item.budget;
-            });
-
-            const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
-            quarterChartInstance.data.datasets[0].data = qLabels.map(q => chartData[q].Done);
-            quarterChartInstance.data.datasets[1].data = qLabels.map(q => chartData[q].Docs);
-            quarterChartInstance.data.datasets[2].data = qLabels.map(q => chartData[q].Pending);
-            quarterChartInstance.update();
-
-            budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget];
-            budgetChartInstance.update();
+            document.getElementById('metricTotal').innerText = dataset.length;
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('projectTableBody');
             tbody.innerHTML = '';
-            document.getElementById('tableRowCounter').innerText = `${data.length} Items Listed`;
-
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-muted-ui bg-black/10">No items match the chosen query limits.</td></tr>`;
-                return;
-            }
+            document.getElementById('tableRowCounter').innerText = `${data.length} Items Displayed`;
 
             data.forEach(item => {
                 const row = document.createElement('tr');
@@ -477,95 +295,29 @@
 
                 if (editingRowIds.has(item.id)) {
                     row.innerHTML = `
-                        <td class="p-2">
-                            <select class="row-quarter edit-input w-full p-1 text-xs rounded">
-                                <option value="First Quarter" ${item.quarter === 'First Quarter' ? 'selected':''}>Q1</option>
-                                <option value="Second Quarter" ${item.quarter === 'Second Quarter' ? 'selected':''}>Q2</option>
-                                <option value="Third Quarter" ${item.quarter === 'Third Quarter' ? 'selected':''}>Q3</option>
-                                <option value="Fourth Quarter" ${item.quarter === 'Fourth Quarter' ? 'selected':''}>Q4</option>
-                            </select>
-                        </td>
-                        <td class="p-2">
-                            <input type="text" value="${item.equipment_no}" class="row-equip edit-input w-full p-1 text-xs font-bold rounded uppercase">
-                        </td>
-                        <td class="p-2">
-                            <input type="text" value="${item.activity}" class="row-activity edit-input w-full p-1 text-xs rounded">
-                        </td>
-                        <td class="p-2">
-                            <input type="text" value="${item.reference}" class="row-ref edit-input w-full p-1 text-xs font-mono rounded">
-                        </td>
-                        <td class="p-2">
-                            <input type="number" value="${item.budget}" class="row-budget edit-input w-full p-1 text-xs text-right font-semibold rounded">
-                        </td>
-                        <td class="p-2">
-                            <select class="row-status edit-input w-full p-1 text-xs rounded font-bold">
-                                <option value="Pending" ${item.status === 'Pending' ? 'selected':''}>Pending</option>
-                                <option value="With Documents" ${item.status === 'With Documents' ? 'selected':''}>With Docs</option>
-                                <option value="Done" ${item.status === 'Done' ? 'selected':''}>Done</option>
-                            </select>
-                        </td>
+                        <td class="p-2"><select class="row-quarter edit-input w-full p-1 text-xs rounded"><option value="First Quarter" ${item.quarter==='First Quarter'?'selected':''}>Q1</option><option value="Second Quarter" ${item.quarter==='Second Quarter'?'selected':''}>Q2</option><option value="Third Quarter" ${item.quarter==='Third Quarter'?'selected':''}>Q3</option><option value="Fourth Quarter" ${item.quarter==='Fourth Quarter'?'selected':''}>Q4</option></select></td>
+                        <td class="p-2"><input type="text" value="${item.equipment_no}" class="row-equip edit-input w-full p-1 text-xs rounded font-bold"></td>
+                        <td class="p-2"><input type="text" value="${item.activity}" class="row-activity edit-input w-full p-1 text-xs rounded"></td>
+                        <td class="p-2"><input type="number" value="${item.budget}" class="row-budget edit-input w-full p-1 text-xs text-right rounded"></td>
+                        <td class="p-2"><select class="row-status edit-input w-full p-1 text-xs rounded font-bold"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
                         <td class="p-2 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="saveEditingRow(${item.id})" class="text-emerald-400 hover:text-emerald-300 p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
-                                </button>
-                                <button onclick="cancelEditingRow(${item.id})" class="text-muted-ui hover:text-white p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
-                            </div>
-                        </td>
-                    `;
+                            <button onclick="saveEditingRow(${item.id})" class="text-emerald-400 font-bold px-1 mr-1">✓</button>
+                            <button onclick="cancelEditingRow(${item.id})" class="text-muted-ui font-bold px-1">✕</button>
+                        </td>`;
                 } else {
-                    let badgeStyle = "bg-amber-500/10 text-amber-400 border-amber-500/20";
-                    if(item.status === 'Done') badgeStyle = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-                    if(item.status === 'With Documents') badgeStyle = "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
-
                     row.innerHTML = `
-                        <td class="p-3.5 text-muted-ui font-medium">${item.quarter}</td>
-                        <td class="p-3.5 font-bold text-white">${item.equipment_no}</td>
-                        <td class="p-3.5 text-slate-300 font-normal">${item.activity}</td>
-                        <td class="p-3.5 text-xs text-muted-ui font-mono">${item.reference || '—'}</td>
-                        <td class="p-3.5 text-right font-semibold text-white">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
-                        <td class="p-3.5 text-center">
-                            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeStyle}">
-                                ${item.status}
-                            </span>
-                        </td>
-                        <td class="p-3.5">
-                            <div class="flex items-center justify-center gap-3 text-muted-ui">
-                                <button onclick="startEditingRow(${item.id})" class="hover:text-white transition-colors p-1" title="Edit line item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button onclick="deleteRow(${item.id})" class="hover:text-red-400 transition-colors p-1" title="Delete item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    `;
+                        <td class="p-3 text-muted-ui">${item.quarter}</td>
+                        <td class="p-3 font-bold text-white">${item.equipment_no}</td>
+                        <td class="p-3 text-slate-300">${item.activity}</td>
+                        <td class="p-3 text-right font-medium text-white">₱${item.budget.toLocaleString()}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${item.status==='Done'?'bg-emerald-500/10 text-emerald-400 border-emerald-500/20':'bg-amber-500/10 text-amber-400 border-amber-500/20'}">${item.status}</span></td>
+                        <td class="p-3 text-center">
+                            <button onclick="startEditingRow(${item.id})" class="text-muted-ui hover:text-white mr-2">📝</button>
+                            <button onclick="deleteRow(${item.id})" class="text-muted-ui hover:text-red-400">🗑️</button>
+                        </td>`;
                 }
                 tbody.appendChild(row);
             });
-        }
-
-        function resetFilters() {
-            document.getElementById('filterQuarter').value = 'All';
-            document.getElementById('filterPrefix').value = 'All';
-            document.getElementById('searchBar').value = '';
-            applyFilters();
-        }
-
-        function exportJSONData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataset, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "CAPEX_Workspace_Export.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
         }
     </script>
 </body>
