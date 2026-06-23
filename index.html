@@ -4,94 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 CAPEX Interactive Management Dashboard</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .edit-input { background: #fff; border: 1px solid #cbd5e1; font-weight: 500; padding: 2px 4px; }
-        .edit-input:focus { outline: 2px solid #3b82f6; }
+        body { font-family: 'Inter', sans-serif; background-color: #131517; color: #f8fafc; }
+        .edit-input { background: #22252a; border: 1px solid #3f444d; color: #f8fafc; font-weight: 500; padding: 2px 4px; }
+        .edit-input:focus { outline: 2px solid #10b981; }
+        /* Custom scrollbar for database container to match theme */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1d21; }
+        ::-webkit-scrollbar-thumb { background: #374151; rounded: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
     </style>
 </head>
 <body class="p-3 md:p-5">
 
-    <div class="max-w-[1600px] mx-auto bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+    <div class="max-w-[1600px] mx-auto bg-[#1c1f22] p-4 rounded-xl border border-[#2d3139] shadow-xl">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-slate-100 gap-3">
+        <!-- DASHBOARD HEADER -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-[#2d3139] gap-3">
             <div>
-                <span class="text-[10px] font-bold text-indigo-600 tracking-wider uppercase bg-indigo-50 px-2 py-0.5 rounded">CAPEX Log Operations</span>
-                <h1 class="text-xl font-bold text-slate-900 mt-1 tracking-tight">2026 OVERALL CAPEX PROJECTS</h1>
-                <p class="text-xs text-slate-500 mt-0.5">Heavy Equipment Major Component Repairs</p>
+                <span class="text-[10px] font-bold text-[#10b981] tracking-wider uppercase bg-[#10b981]/10 px-2 py-0.5 rounded">CAPEX Log Operations</span>
+                <h1 class="text-xl font-bold text-white mt-1 tracking-tight">2026 OVERALL CAPEX PROJECTS</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Heavy Equipment Major Component Repairs</p>
             </div>
             
+            <!-- MASTER INTERACTIVE FILTERS -->
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                 <div class="relative w-full sm:w-56">
-                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium">
+                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
                 </div>
-                <select id="filterQuarter" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold text-slate-700">
+                <select id="filterQuarter" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Quarters</option>
                     <option value="First Quarter">First Quarter (Q1)</option>
                     <option value="Second Quarter">Second Quarter (Q2)</option>
                     <option value="Third Quarter">Third Quarter (Q3)</option>
                     <option value="Fourth Quarter">Fourth Quarter (Q4)</option>
                 </select>
-                <select id="filterPrefix" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-semibold text-slate-700">
+                <select id="filterPrefix" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Types</option>
                     <option value="BH">BH (Excavators)</option>
                     <option value="BD">BD (Dozers)</option>
                     <option value="CR">CR (Cranes)</option>
+                    <option value="RR">RR (Road Rollers)</option>
+                    <option value="RG">RG (Road Graders)</option>
                 </select>
-                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-all flex items-center gap-1">
+                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
                     <span>+</span> Add Project
                 </button>
             </div>
         </div>
 
+        <!-- CORE PERFORMANCE METRICS ROW -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
-            <div class="bg-slate-50/60 p-3 rounded-xl border border-slate-100 flex flex-col justify-between">
+            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Total Tracked Tasks</p>
-                    <h3 class="text-xl font-bold text-slate-900 mt-0.5" id="metricTotalTracked">0</h3>
+                    <h3 class="text-xl font-bold text-white mt-0.5" id="metricTotalTracked">0</h3>
                 </div>
             </div>
-            <div class="bg-slate-50/60 p-3 rounded-xl border border-slate-100 flex flex-col justify-between">
+            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Aggregate Budget</p>
-                    <h3 class="text-xl font-bold text-slate-900 mt-0.5" id="metricBudget">₱0</h3>
+                    <h3 class="text-xl font-bold text-white mt-0.5" id="metricBudget">₱0</h3>
                 </div>
             </div>
-            <div class="bg-slate-50/60 p-3 rounded-xl border border-slate-100 flex flex-col justify-between">
+            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Completion Rate</p>
-                    <h3 class="text-xl font-bold text-emerald-600 mt-0.5" id="metricCompRate">0%</h3>
+                    <h3 class="text-xl font-bold text-[#10b981] mt-0.5" id="metricCompRate">0%</h3>
                 </div>
-                <div class="w-full bg-slate-200 h-1 mt-2 rounded-full overflow-hidden">
-                    <div id="barCompRate" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
+                    <div id="barCompRate" class="bg-[#10b981] h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
-            <div class="bg-slate-50/60 p-3 rounded-xl border border-slate-100 flex flex-col justify-between">
+            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Pipeline Progress</p>
-                    <h3 class="text-xl font-bold text-blue-600 mt-0.5" id="metricPipeline">0%</h3>
+                    <h3 class="text-xl font-bold text-blue-400 mt-0.5" id="metricPipeline">0%</h3>
                 </div>
-                <div class="w-full bg-slate-200 h-1 mt-2 rounded-full overflow-hidden">
+                <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
                     <div id="barPipeline" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
+        <!-- CHARTS VISUALIZATION WORKSPACE -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
-            <div class="lg:col-span-2 p-4 bg-white border border-slate-200 rounded-xl">
+            <div class="lg:col-span-2 p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
                 <div class="mb-2">
-                    <h4 class="text-xs font-bold text-slate-800">PROJECT TIMELINE STATUS DISTRIBUTIONS</h4>
+                    <h4 class="text-xs font-bold text-slate-200">PROJECT TIMELINE STATUS DISTRIBUTIONS</h4>
                 </div>
                 <div class="h-44 relative">
                     <canvas id="quarterChart"></canvas>
                 </div>
             </div>
-            <div class="p-4 bg-white border border-slate-200 rounded-xl">
+            <div class="p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
                 <div class="mb-2">
-                    <h4 class="text-xs font-bold text-slate-800">BUDGET SHARE BY EQUIPMENT TYPE</h4>
+                    <h4 class="text-xs font-bold text-slate-200">BUDGET SHARE BY EQUIPMENT TYPE</h4>
                 </div>
                 <div class="h-44 relative">
                     <canvas id="budgetChart"></canvas>
@@ -99,18 +113,19 @@
             </div>
         </div>
 
-        <div class="border border-slate-200 rounded-xl overflow-hidden bg-white mt-4">
-            <div class="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+        <!-- COMPREHENSIVE LOG DETAILS WORKFLOW COMPONENT -->
+        <div class="border border-[#2d3139] rounded-xl overflow-hidden bg-[#22252a] mt-4">
+            <div class="p-3 border-b border-[#2d3139] flex justify-between items-center bg-[#1c1f22]">
                 <div>
-                    <h3 class="text-xs font-bold text-slate-900">MASTER PROJECTS DATABASE REGISTRY</h3>
+                    <h3 class="text-xs font-bold text-slate-200">MAJOR PROJECTS DATABASE REGISTRY</h3>
                 </div>
-                <span id="tableRowCounter" class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">0 Items</span>
+                <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
             </div>
 
             <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
-                        <tr class="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <thead class="sticky top-0 bg-[#1c1f22] z-10 shadow-sm">
+                        <tr class="border-b border-[#2d3139] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                             <th class="py-2 px-3 pl-4 w-32">Quarter</th>
                             <th class="py-2 px-3 w-28">Asset No.</th>
                             <th class="py-2 px-3">Planned Activity Action Details</th>
@@ -120,24 +135,26 @@
                             <th class="py-2 px-3 text-center w-24">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="projectTableBody" class="text-xs divide-y divide-slate-100">
-                        </tbody>
+                    <tbody id="projectTableBody" class="text-xs divide-y divide-[#2d3139]">
+                        <!-- Content rendered dynamically -->
+                    </tbody>
                 </table>
             </div>
         </div>
 
-        <div class="mt-3 flex flex-wrap gap-3 items-center justify-end px-1 text-[11px] font-medium text-slate-400">
+        <!-- QUICK SUMMARY LEGEND BAR -->
+        <div class="mt-3 flex flex-wrap gap-3 items-center justify-end px-1 text-[11px] font-medium text-slate-500">
             <div class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                <span>Done: <strong id="metricDoneStatus" class="text-slate-600">0</strong></span>
+                <span class="w-2 h-2 rounded-full bg-[#10b981] inline-block"></span>
+                <span>Done: <strong id="metricDoneStatus" class="text-slate-300">0</strong></span>
             </div>
             <div class="flex items-center gap-1">
                 <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-                <span>With Docs: <strong id="metricWithDocs" class="text-slate-600">0</strong></span>
+                <span>With Docs: <strong id="metricWithDocs" class="text-slate-300">0</strong></span>
             </div>
             <div class="flex items-center gap-1">
                 <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-                <span>Pending: <strong id="metricPending" class="text-slate-600">0</strong></span>
+                <span>Pending: <strong id="metricPending" class="text-slate-300">0</strong></span>
             </div>
         </div>
 
@@ -224,10 +241,10 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 4, textDirection: 'ltr', font: { size: 10 } } } },
+                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 4, color: '#94a3b8', font: { size: 10 } } } },
                         scales: {
-                            x: { stacked: true, grid: { display: false }, labels: ['Q1', 'Q2', 'Q3', 'Q4'] },
-                            y: { stacked: true, grid: { color: 'rgba(156, 163, 175, 0.08)' } }
+                            x: { stacked: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
+                            y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
                         }
                     }
                 });
@@ -243,7 +260,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 4, font: { size: 10 } } } },
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 4, color: '#94a3b8', font: { size: 10 } } } },
                         cutout: '70%'
                     }
                 });
@@ -346,7 +363,7 @@
             data.forEach(item => {
                 const row = document.createElement('tr');
                 row.id = `row-${item.id}`;
-                row.className = "hover:bg-slate-50/40 transition-colors border-b border-gray-100";
+                row.className = "hover:bg-[#282c32]/50 transition-colors border-b border-[#2d3139]";
 
                 if (editingRowIds.has(item.id)) {
                     row.innerHTML = `
@@ -357,24 +374,24 @@
                         <td class="p-1"><input type="number" value="${item.budget}" class="row-budget edit-input w-full text-right rounded text-xs"></td>
                         <td class="p-1"><select class="row-status edit-input w-full rounded font-bold text-xs"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
                         <td class="p-1 text-center">
-                            <button onclick="saveEditingRow(${item.id})" class="text-emerald-500 font-bold px-1 mr-1">✓</button>
-                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-400 font-bold px-1">✕</button>
+                            <button onclick="saveEditingRow(${item.id})" class="text-[#10b981] font-bold px-1 mr-1">✓</button>
+                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-500 font-bold px-1">✕</button>
                         </td>`;
                 } else {
-                    let badgeColor = "bg-amber-500/10 text-amber-500 border-amber-500/20";
-                    if (item.status === 'Done') badgeColor = "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-                    if (item.status === 'With Documents') badgeColor = "bg-blue-500/10 text-blue-600 border-blue-500/20";
+                    let badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    if (item.status === 'Done') badgeColor = "bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20";
+                    if (item.status === 'With Documents') badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
 
                     row.innerHTML = `
-                        <td class="py-1.5 px-3 pl-4 text-gray-500 font-medium">${item.quarter.replace(' Quarter', '')}</td>
-                        <td class="py-1.5 px-3 font-bold text-slate-800">${item.equipment_no}</td>
-                        <td class="py-1.5 px-3 text-slate-600 truncate max-w-xs" title="${item.activity}">${item.activity}</td>
-                        <td class="py-1.5 px-3 text-slate-500 font-mono text-[11px]">${item.po_reference || '—'}</td>
-                        <td class="py-1.5 px-3 text-right font-semibold text-slate-800">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
+                        <td class="py-1.5 px-3 pl-4 text-slate-400 font-medium">${item.quarter.replace(' Quarter', '')}</td>
+                        <td class="py-1.5 px-3 font-bold text-slate-200">${item.equipment_no}</td>
+                        <td class="py-1.5 px-3 text-slate-300 truncate max-w-xs" title="${item.activity}">${item.activity}</td>
+                        <td class="py-1.5 px-3 text-slate-400 font-mono text-[11px]">${item.po_reference || '—'}</td>
+                        <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
                         <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
                         <td class="py-1.5 px-3 text-center text-[13px]">
-                            <button onclick="startEditingRow(${item.id})" class="text-gray-400 hover:text-slate-900 mr-2" title="Edit">📝</button>
-                            <button onclick="deleteRow(${item.id})" class="text-gray-400 hover:text-red-500" title="Delete">🗑️</button>
+                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2" title="Edit">📝</button>
+                            <button onclick="deleteRow(${item.id})" class="text-slate-500 hover:text-red-400" title="Delete">🗑️</button>
                         </td>`;
                 }
                 tbody.appendChild(row);
