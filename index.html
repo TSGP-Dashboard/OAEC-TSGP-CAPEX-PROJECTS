@@ -109,7 +109,7 @@
                     <h3 class="text-xs font-bold text-slate-200">MASTER PROJECTS DATABASE REGISTRY</h3>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="syncIndicator" class="text-[10px] font-medium text-[#10b981] bg-[#10b981]/10 px-2 py-0.5 rounded">Connected to API</span>
+                    <span id="syncIndicator" class="text-[10px] font-medium text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">Connecting...</span>
                     <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
                 </div>
             </div>
@@ -165,16 +165,15 @@
             loadDatabaseFromAPI();
         });
 
-        // 1. READ: Fetch all existing entries from your SheetDB API
+        // READ: Fetch all rows from your SheetDB API
         async function loadDatabaseFromAPI() {
             setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
-                // standardizing properties safely
                 dataset = data.map(item => ({
-                    id: parseInt(item.id),
+                    id: parseInt(item.id) || 0,
                     quarter: item.quarter || '',
                     equipment_no: item.equipment_no || '',
                     activity: item.activity || '',
@@ -299,7 +298,7 @@
             const segments = {
                 'First Quarter': { done: 0, docs: 0, pending: 0 },
                 'Second Quarter': { done: 0, docs: 0, pending: 0 },
-                'Third Quarter': { done: 0, done: 0, docs: 0, pending: 0 },
+                'Third Quarter': { done: 0, docs: 0, pending: 0 },
                 'Fourth Quarter': { done: 0, docs: 0, pending: 0 }
             };
 
@@ -340,7 +339,7 @@
             if (counter) counter.innerText = `${data.length} Items`;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-medium">No projects found matching current filter query</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-medium">No projects found matching current query</td></tr>`;
                 return;
             }
 
@@ -385,7 +384,7 @@
         function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
         function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
         
-        // 2. UPDATE: Push spreadsheet changes back to your SheetDB API route
+        // UPDATE: Send patch updates back to SheetDB API via specific ID matching
         async function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
@@ -402,7 +401,6 @@
             setSyncStatus("Saving Changes...", "text-amber-400 bg-amber-500/10");
 
             try {
-                // SheetDB structural patch format updates where matches column condition
                 const response = await fetch(`${API_URL}/id/${id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
@@ -425,7 +423,7 @@
             }
         }
 
-        // 3. DELETE: Drop a structural line item entry row from SheetDB
+        // DELETE: Drop a line item entry row from SheetDB
         async function deleteRow(id) {
             if (!confirm("Permanently delete this entry from your Google Sheet cloud database?")) return;
             
@@ -449,12 +447,11 @@
             }
         }
 
-        // 4. CREATE: Generate new tracking rows and push immediately into your sheet
+        // CREATE: Generate custom numeric row keys and push directly to sheet database
         async function addNewRow() {
             setSyncStatus("Creating item...", "text-amber-400 bg-amber-500/10");
             
-            // Build a clean, unconflicting ID number
-            const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => o.id)) + 1 : 1;
+            const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => parseInt(o.id) || 0)) + 1 : 1;
             
             const newRowObj = {
                 id: nextId,
@@ -475,7 +472,7 @@
 
                 if (response.ok) {
                     dataset.unshift(newRowObj);
-                    editingRowIds.add(nextId); // Instantly drop item into inline-editor focus state
+                    editingRowIds.add(nextId);
                     setSyncStatus("Connected to API", "text-[#10b981] bg-[#10b981]/10");
                     applyFilters();
                 } else {
