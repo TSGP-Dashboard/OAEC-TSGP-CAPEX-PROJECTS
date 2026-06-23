@@ -154,9 +154,11 @@
     </div>
 
     <script>
-        // Paste your deployed Google Apps Script URL here:
-        const API_URL = "https://script.google.com/a/macros/omegaasia.ph/s/AKfycbz3M75AgNQ1qrXBvYfS6E_Xzr7s4n8k5VvmF30BjrQQY65xzTR6qB_fUZAR9cEVf1_lSg/exec";
-        const SHEET_PATH = "Sheet1"; // Change to match your actual sheet tab name if different
+        // 1. Paste your deployed Google Apps Script URL here:
+        const API_URL = "https://script.google.com/a/macros/omegaasia.ph/s/AKfycbyqTzDkCRhLxB9pz_G1AwdF66xxT_suy0VFyTBcaQJF/dev";
+        
+        // 2. CRITICAL: Make sure this exactly matches the text on your Google Sheet tab at the bottom (e.g., "Sheet1", "CAPEX Log", etc.)
+        const SHEET_PATH = "Sheet1"; 
 
         let dataset = [];
         let editingRowIds = new Set();
@@ -175,7 +177,6 @@
                 const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
                 const result = await response.json();
                 
-                // standardizing schema mappings dynamically
                 dataset = (result.data || result || []).map(item => ({
                     id: parseInt(item.id) || 0,
                     quarter: item.quarter || '',
@@ -377,7 +378,7 @@
                         <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
                         <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
                         <td class="py-1.5 px-3 text-center text-[13px]">
-                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2" title="Edit/Update parameters temporarily on UI layout">📝</button>
+                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2" title="Edit row data">📝</button>
                         </td>`;
                 }
                 tbody.appendChild(row);
@@ -387,21 +388,49 @@
         function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
         function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
         
-        function saveEditingRow(id) {
+        // UPDATE & SAVE: Collects row fields and safely updates it to your live sheet
+        async function saveEditingRow(id) {
             const tr = document.getElementById(`row-${id}`);
             if (!tr) return;
 
-            const targetItem = dataset.find(item => item.id === id);
-            if (targetItem) {
-                targetItem.quarter = tr.querySelector('.row-quarter').value;
-                targetItem.equipment_no = tr.querySelector('.row-equip').value;
-                targetItem.activity = tr.querySelector('.row-activity').value;
-                targetItem.po_reference = tr.querySelector('.row-po').value || '—';
-                targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
-                targetItem.status = tr.querySelector('.row-status').value;
+            const quarter = tr.querySelector('.row-quarter').value;
+            const equipment_no = tr.querySelector('.row-equip').value;
+            const activity = tr.querySelector('.row-activity').value;
+            const po_reference = tr.querySelector('.row-po').value || '—';
+            const budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
+            const status = tr.querySelector('.row-status').value;
+
+            setSyncStatus("Saving to Sheet...", "text-amber-400 bg-amber-500/10");
+
+            const queryParams = new URLSearchParams({
+                action: 'write',
+                path: SHEET_PATH,
+                id: id,
+                quarter: quarter,
+                equipment_no: equipment_no,
+                activity: activity,
+                po_reference: po_reference,
+                budget: budget,
+                status: status
+            });
+
+            try {
+                // Sends the edited row back to your App Script deployment trigger
+                await fetch(`${API_URL}?${queryParams.toString()}`, { method: 'GET', mode: 'no-cors' });
+                
+                const targetItem = dataset.find(item => item.id === id);
+                if (targetItem) {
+                    Object.assign(targetItem, { quarter, equipment_no, activity, po_reference, budget, status });
+                }
+
+                editingRowIds.delete(id);
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
+            } catch (err) {
+                console.error(err);
+                setSyncStatus("Sync error", "text-red-400 bg-red-500/10");
+                alert("Failed to broadcast edits to cloud registry.");
             }
-            editingRowIds.delete(id);
-            applyFilters();
         }
 
         // CREATE: Packages all structural parameters and pushes seamlessly to your script write action
@@ -420,7 +449,6 @@
                 status: "Pending"
             };
 
-            // Format query parameters explicitly requested by your script setup
             const queryParams = new URLSearchParams({
                 action: 'write',
                 path: SHEET_PATH,
@@ -434,18 +462,16 @@
             });
 
             try {
-                // Using 'no-cors' mode alternative or classic redirect handling typical for Apps Script deployments
                 await fetch(`${API_URL}?${queryParams.toString()}`, { method: 'GET', mode: 'no-cors' });
                 
-                // Optimistically adding the local record on visual stack framework
                 dataset.unshift(newRowObj);
-                editingRowIds.add(nextId); // Put row into focus automatically so you can type actual data entries
+                editingRowIds.add(nextId); 
                 setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
                 applyFilters();
             } catch (err) {
                 console.error(err);
                 setSyncStatus("Insertion error", "text-red-400 bg-red-500/10");
-                alert("Failed to confirm secure record injection onto live Google Sheets cluster.");
+                alert("Failed to add new record.");
             }
         }
     </script>
