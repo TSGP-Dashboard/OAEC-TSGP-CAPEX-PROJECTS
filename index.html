@@ -343,28 +343,22 @@
 
         let bhBudget = 0, bdBudget = 0, crBudget = 0;
 
-        filteredData.forEach(item => {
-            if (segments[item.quarter]) {
-                if (item.status === 'Done') segments[item.quarter].done++;
-                else if (item.status === 'With Documents') segments[item.quarter].docs++;
-                else segments[item.quarter].pending++;
-            }
-            if (item.equipment_no.startsWith('BH')) bhBudget += item.budget;
-            else if (item.equipment_no.startsWith('BD')) bdBudget += item.budget;
-            else crBudget += item.budget;
-        });
-
-        if (quarterChartInstance) {
-            quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q].done);
-            quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q].docs);
-            quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q].pending);
-            quarterChartInstance.update();
-        }
-
-        if (budgetChartInstance) {
-            budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget];
-            budgetChartInstance.update();
-        }
+filteredData.forEach(item => {
+    if (segments[item.quarter]) {
+        if (item.status === 'Done') segments[item.quarter].done++;
+        else if (item.status === 'With Documents') segments[item.quarter].docs++;
+        else segments[item.quarter].pending++;
+    }
+    
+    // Explicit and case-insensitive check to prevent data mismatches
+    const equipNo = (item.equipment_no || "").toUpperCase();
+    if (equipNo.startsWith('BH')) {
+        bhBudget += (parseFloat(item.budget) || 0);
+    } else if (equipNo.startsWith('BD')) {
+        bdBudget += (parseFloat(item.budget) || 0);
+    } else if (equipNo.startsWith('CR')) {
+        crBudget += (parseFloat(item.budget) || 0);
+    }
     }
 
     function renderTable(data) {
