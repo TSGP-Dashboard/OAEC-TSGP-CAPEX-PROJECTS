@@ -213,9 +213,9 @@
                     data: {
                         labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                         datasets: [
-                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 12 },
-                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 12 },
-                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 12 }
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 40 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 40 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 40 }
                         ]
                     },
                     options: {
@@ -397,7 +397,7 @@
             const equipment_no = tr.querySelector('.row-equip').value;
             const activity = tr.querySelector('.row-activity').value;
             const po_reference = tr.querySelector('.row-po').value || '—';
-            const budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
+            const budget = parseFloat(tr.querySelector('.row-budget').value);
             const status = tr.querySelector('.row-status').value;
 
             setSyncStatus("Saving to Sheet...", "text-amber-400 bg-amber-500/10");
