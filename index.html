@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 CAPEX Interactive Management Dashboard</title>
+    <title>SpireFlow CAPEX — Interactive Management Workspace</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -11,41 +11,100 @@
     <!-- Google Fonts Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .edit-input { background: #fff; border: 1px solid #cbd5e1; font-weight: 500; }
-        .edit-input:focus { outline: 2px solid #3b82f6; }
+        body { font-family: 'Inter', sans-serif; background-color: #111317; color: #f3f4f6; }
+        .bg-dark-card { background-color: #1a1d24; }
+        .bg-dark-sidebar { background-color: #16181d; }
+        .border-dark-ui { border-color: #262a33; }
+        .text-muted-ui { color: #9ca3af; }
+        
+        /* Custom Input styling for editing state */
+        .edit-input { background: #262a33; border: 1px solid #374151; color: #fff; font-weight: 500; }
+        .edit-input:focus { outline: 2px solid #10b981; }
+        
+        /* Custom scrollbar for dark table layout */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #16181d; }
+        ::-webkit-scrollbar-thumb { background: #262a33; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="flex min-h-screen overflow-x-hidden">
 
-    <div class="max-w-[1600px] mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        
-        <!-- DASHBOARD HEADER -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-6 mb-6 gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">2026 CAPEX WORKFLOW ENGINE</h1>
-                <p class="text-sm text-slate-500">Interactive Workspace — Row-Level Inline Action Updates & Live Analytics</p>
+    <!-- SIDEBAR NAV (Matching UI-.png style hierarchy) -->
+    <aside class="w-64 bg-dark-sidebar border-r border-dark-ui flex flex-col shrink-0 hidden md:flex">
+        <div class="h-16 flex items-center px-6 gap-2 border-b border-dark-ui">
+            <!-- SpireFlow Branding Logo -->
+            <div class="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40">
+                <div class="h-2 w-2 rounded-full bg-emerald-400"></div>
             </div>
-            <div class="flex flex-wrap items-center gap-3">
-                <button onclick="addNewRow()" class="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-all shadow-sm cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                    <span>Add New Capex Row</span>
+            <span class="font-bold text-lg tracking-tight text-white flex items-center">Spire<span class="text-emerald-400 font-medium">flow</span></span>
+        </div>
+        
+        <!-- Navigation Pages Links -->
+        <div class="p-4 space-y-6 flex-1">
+            <div>
+                <span class="text-[10px] font-bold text-muted-ui/50 uppercase tracking-widest block mb-2 px-2">Pages</span>
+                <nav class="space-y-1">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 font-semibold text-sm transition-all border border-emerald-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" /></svg>
+                        Dashboard
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui hover:text-white text-sm font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                        Orders
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui hover:text-white text-sm font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        Customers
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui hover:text-white text-sm font-medium transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-14L4 7m8 4v10M4 7v10l8 4" /></svg>
+                        Products
+                    </a>
+                </nav>
+            </div>
+            <div>
+                <span class="text-[10px] font-bold text-muted-ui/50 uppercase tracking-widest block mb-2 px-2">Single Charts</span>
+                <nav class="space-y-1">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui text-sm font-medium transition-all">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Area Chart
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 text-muted-ui text-sm font-medium transition-all">
+                        <span class="h-1.5 w-1.5 rounded-full bg-indigo-400"></span> Bar Breakdown
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN INTERACTIVE WORKSPACE AREA -->
+    <main class="flex-1 min-w-0 p-4 md:p-8 space-y-6 max-w-[1600px] mx-auto w-full">
+        
+        <!-- HEADER SEARCH / ACTIONS BAR -->
+        <div class="flex items-center justify-between gap-4 border-b border-dark-ui pb-4">
+            <div class="flex items-center gap-2 text-sm text-muted-ui font-medium">
+                <span>Home</span>
+                <span>&gt;</span>
+                <span class="text-white">Dashboard</span>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="addNewRow()" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg transition-all shadow-sm cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    <span>Add New Capex Item</span>
                 </button>
-                <button onclick="exportJSONData()" class="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium border border-slate-200 rounded-lg transition-all shadow-xs cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                    Download JSON Data
-                </button>
-                <button onclick="resetFilters()" class="p-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-all shadow-xs" title="Reset Filters">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" /></svg>
+                <button onclick="exportJSONData()" class="flex items-center gap-1.5 px-3 py-2 bg-dark-card hover:bg-white/5 text-slate-300 text-xs font-semibold border border-dark-ui rounded-lg transition-all shadow-xs cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-muted-ui" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <span>📥 CSV / JSON</span>
                 </button>
             </div>
         </div>
 
-        <!-- FILTERS -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+        <!-- SEARCH ENGINE AND SELECT FILTER WORKSPACE -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-dark-card p-4 rounded-xl border border-dark-ui">
             <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Quarter</label>
-                <select id="filterQuarter" onchange="applyFilters()" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-[10px] font-bold text-muted-ui mb-1.5 uppercase tracking-wider">Timeline Quarter Filter</label>
+                <select id="filterQuarter" onchange="applyFilters()" class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
                     <option value="All">All Quarters</option>
                     <option value="First Quarter">First Quarter (Q1)</option>
                     <option value="Second Quarter">Second Quarter (Q2)</option>
@@ -54,132 +113,134 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Equipment Prefix</label>
-                <select id="filterPrefix" onchange="applyFilters()" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="All">All Equipment Types</option>
+                <label class="block text-[10px] font-bold text-muted-ui mb-1.5 uppercase tracking-wider">Equipment Prefix Category</label>
+                <select id="filterPrefix" onchange="applyFilters()" class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    <option value="All">All Categories</option>
                     <option value="BH">BH (Excavators)</option>
                     <option value="BD">BD (Dozers)</option>
                     <option value="CR">CR (Cranes)</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wider">Live Search Input</label>
-                <input id="searchBar" type="text" oninput="applyFilters()" placeholder="Type equipment no. or activity to drill down..." class="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-[10px] font-bold text-muted-ui mb-1.5 uppercase tracking-wider">Live Search Input</label>
+                <input id="searchBar" type="text" oninput="applyFilters()" placeholder="Search equipment, activity, PO logs..." class="w-full bg-[#111317] border border-dark-ui rounded-lg p-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
         </div>
 
-        <!-- TOP METRICS GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">CAPEX Project Registry</span>
-                <div class="grid grid-cols-2 gap-2 mt-3">
-                    <div class="border-r border-slate-100">
-                        <span id="metricTotal" class="block text-2xl font-bold text-slate-800">50</span>
-                        <span class="text-[11px] text-slate-400 font-medium">Total Tracked</span>
-                    </div>
-                    <div class="pl-2">
-                        <span id="metricCompleted" class="block text-2xl font-bold text-emerald-600">4</span>
-                        <span class="text-[11px] text-slate-400 font-medium">Done Status</span>
-                    </div>
+        <!-- PREMIUM MINI METRICS SPARK CARDS GRID (Inspired directly by UI-.png) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Metric 1: Budget Total -->
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <span class="text-xs font-medium text-muted-ui">Live Dynamic Budget</span>
+                    <h3 id="metricBudget" class="text-2xl font-bold text-white mt-1 tracking-tight">₱71,950,000</h3>
                 </div>
-                <div class="grid grid-cols-2 gap-2 mt-3 border-t border-slate-50 pt-2">
-                    <div class="border-r border-slate-100">
-                        <span id="metricDocs" class="block text-sm font-semibold text-blue-600">7</span>
-                        <span class="text-[10px] text-slate-400 uppercase font-medium">With Docs</span>
-                    </div>
-                    <div class="pl-2">
-                        <span id="metricPending" class="block text-sm font-semibold text-amber-600">39</span>
-                        <span class="text-[10px] text-slate-400 uppercase font-medium">Pending</span>
-                    </div>
+                <div class="mt-2 flex items-center gap-1.5 text-[11px] text-emerald-400">
+                    <span>+100% Live Sync</span>
+                    <span class="text-muted-ui">Adjusts on edits</span>
+                </div>
+            </div>
+            
+            <!-- Metric 2: Total Items -->
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <span class="text-xs font-medium text-muted-ui">CAPEX Line Items</span>
+                    <h3 id="metricTotal" class="text-2xl font-bold text-white mt-1 tracking-tight">50</h3>
+                </div>
+                <div class="mt-2 flex items-center gap-1.5 text-[11px] text-muted-ui">
+                    <span id="metricPending" class="text-amber-400 font-semibold">39</span> Pending Process
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Actual Completion Rate</span>
-                <div class="my-auto">
-                    <span id="metricCompRate" class="text-3xl font-bold text-slate-800 tracking-tight">8%</span>
-                    <div class="w-full bg-slate-100 rounded-full h-2 mt-2">
-                        <div id="barCompRate" class="bg-emerald-500 h-2 rounded-full" style="width: 8%"></div>
-                    </div>
+            <!-- Metric 3: Done Rate -->
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <span class="text-xs font-medium text-muted-ui">Actual Completion Rate</span>
+                    <h3 id="metricCompRate" class="text-2xl font-bold text-white mt-1 tracking-tight">8%</h3>
                 </div>
-                <span class="text-[11px] text-slate-400 font-medium">Based on current status values</span>
+                <div class="w-full bg-white/5 rounded-full h-1 mt-2">
+                    <div id="barCompRate" class="bg-emerald-500 h-1 rounded-full transition-all duration-300" style="width: 8%"></div>
+                </div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Documentation Pipeline Progress</span>
-                <div class="my-auto">
-                    <span id="metricDocRate" class="text-3xl font-bold text-slate-800 tracking-tight">22%</span>
-                    <div class="w-full bg-slate-100 rounded-full h-2 mt-2">
-                        <div id="barDocRate" class="bg-blue-500 h-2 rounded-full" style="width: 22%"></div>
-                    </div>
+            <!-- Metric 4: Documentation Rate -->
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between relative overflow-hidden">
+                <div>
+                    <span class="text-xs font-medium text-muted-ui">Pipeline Progress</span>
+                    <h3 id="metricDocRate" class="text-2xl font-bold text-white mt-1 tracking-tight">22%</h3>
                 </div>
-                <span class="text-[11px] text-slate-400 font-medium">Done + Documented breakdown</span>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Live Dynamic Budget Total</span>
-                <div class="my-auto">
-                    <span id="metricBudget" class="text-2xl font-bold text-slate-800 tracking-tight">₱71,950,000</span>
-                    <p class="text-[11px] text-slate-500 mt-1">Adjusts automatically upon edits</p>
+                <div class="w-full bg-white/5 rounded-full h-1 mt-2">
+                    <div id="barDocRate" class="bg-indigo-500 h-1 rounded-full transition-all duration-300" style="width: 22%"></div>
                 </div>
-                <span class="text-[11px] text-slate-400 font-medium">Currency: PHP (₱)</span>
             </div>
         </div>
 
-        <!-- CHARTS VISUAL DIAGRAMS -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs lg:col-span-2">
-                <div class="mb-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Project Timeline Status Distributions</h3>
+        <!-- TWO-COLUMN DIAGRAMS WORKSPACE (Layout mirroring UI-.png) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Timeline Line/Bar Distribution Chart -->
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 lg:col-span-2 flex flex-col justify-between">
+                <div class="mb-2 flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Revenue Over Time & Workflow Phases</h4>
+                    <div class="flex gap-4 text-[11px] text-muted-ui font-medium">
+                        <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500"></span>Done</span>
+                        <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-indigo-500"></span>With Docs</span>
+                        <span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-amber-500"></span>Pending</span>
+                    </div>
                 </div>
-                <div class="h-[220px] relative">
+                <div class="h-[200px] mt-2 relative">
                     <canvas id="quarterChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-                <div class="mb-3">
-                    <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Budget Share By Equipment Type</h3>
+            <!-- Budget Share Donut Ring Diagram -->
+            <div class="bg-dark-card border border-dark-ui rounded-xl p-5 flex flex-col justify-between">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-white">Asset Share Breakdown</h4>
                 </div>
-                <div class="h-[220px] relative flex items-center justify-center">
+                <div class="h-[180px] my-auto relative flex items-center justify-center">
                     <canvas id="budgetChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- EDITABLE MASTER REGISTER TABLE -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">CAPEX Interactive Ledger Grid</h3>
-                <span id="tableRowCounter" class="text-xs bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 rounded-full">Showing 50 items</span>
+        <!-- HIGH-FIDELITY INTERACTIVE LEDGER TABLE WITH LOCAL ROW-EDIT ACTIONS -->
+        <div class="bg-dark-card border border-dark-ui rounded-xl overflow-hidden shadow-xl">
+            <div class="px-5 py-4 border-b border-dark-ui flex justify-between items-center bg-[#1e222b]">
+                <div class="flex items-center gap-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-white">CAPEX Master Registry Matrix</h3>
+                    <span id="tableRowCounter" class="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">50 Items</span>
+                </div>
+                <button onclick="resetFilters()" class="text-xs text-muted-ui hover:text-white flex items-center gap-1 transition-all">
+                    <span>🔄 Reset Filter System</span>
+                </button>
             </div>
-            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
-                <table class="w-full text-left text-sm border-collapse">
-                    <thead class="bg-slate-100 text-slate-600 font-medium text-xs uppercase tracking-wider sticky top-0 shadow-xs z-10">
+            
+            <div class="overflow-x-auto max-h-[500px]">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-[#16181d] text-muted-ui font-semibold uppercase tracking-wider sticky top-0 border-b border-dark-ui z-10">
                         <tr>
-                            <th class="p-3 bg-slate-100 w-[140px]">Quarter</th>
-                            <th class="p-3 bg-slate-100 w-[120px]">Equipment No</th>
-                            <th class="p-3 bg-slate-100">Planned Activity Description</th>
-                            <th class="p-3 bg-slate-100 w-[180px]">Reference / PO</th>
-                            <th class="p-3 bg-slate-100 text-right w-[150px]">Budget Amount</th>
-                            <th class="p-3 bg-slate-100 text-center w-[160px]">Workflow Status</th>
-                            <th class="p-3 bg-slate-100 text-center w-[100px]">Actions</th>
+                            <th class="p-3.5 w-[140px]">Quarter</th>
+                            <th class="p-3.5 w-[120px]">Equipment No</th>
+                            <th class="p-3.5">Planned Activity Description</th>
+                            <th class="p-3.5 w-[160px]">Reference / PO</th>
+                            <th class="p-3.5 text-right w-[150px]">Budget Amount</th>
+                            <th class="p-3.5 text-center w-[150px]">Workflow Status</th>
+                            <!-- Actions header matching style in image_c6fe0a.png -->
+                            <th class="p-3.5 text-center w-[100px]">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="projectTableBody" class="divide-y divide-slate-100 text-slate-700">
-                        <!-- Content dynamically rendered via JS -->
+                    <tbody id="projectTableBody" class="divide-y divide-dark-ui text-slate-300">
+                        <!-- Rendered seamlessly using the action framework engine -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-    </div>
+    </main>
 
     <script>
-        // Set holding active row editing modes
         let editingRowIds = new Set();
 
-        // Source of Truth Data array
         let dataset = [
             {"id": 1, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF ENGINE,TRANSMISSION,TORQUE CONVERTER", "reference": "-", "budget": 0, "status": "Done", "prefix": "BD"},
             {"id": 2, "quarter": "First Quarter", "equipment_no": "BD-18", "activity": "RECONDITION OF UNDERCARRIAGE", "reference": "-", "budget": 0, "status": "Done", "prefix": "BD"},
@@ -248,16 +309,19 @@
                 data: {
                     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                     datasets: [
-                        { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981' },
-                        { label: 'With Documents', data: [0, 0, 0, 0], backgroundColor: '#3b82f6' },
-                        { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b' }
+                        { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 20 },
+                        { label: 'With Documents', data: [0, 0, 0, 0], backgroundColor: '#6366f1', barThickness: 20 },
+                        { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 20 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
-                    scales: { x: { stacked: true }, y: { stacked: true, grid: { color: '#f1f5f9' } } }
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { stacked: true, grid: { display: false }, ticks: { color: '#9ca3af' } },
+                        y: { stacked: true, grid: { color: '#262a33' }, ticks: { color: '#9ca3af' } }
+                    }
                 }
             });
 
@@ -266,21 +330,20 @@
                 type: 'doughnut',
                 data: {
                     labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
-                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#6366f1', '#f43f5e', '#ec4899'] }]
+                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#6366f1', '#f43f5e'], borderWidth: 0 }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
-                    cutout: '70%'
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, color: '#9ca3af' } } },
+                    cutout: '75%'
                 }
             });
         }
 
-        // Inline Row Actions management functions
         function startEditingRow(id) {
             editingRowIds.add(id);
-            applyFilters(); // Re-render target row items layout 
+            applyFilters();
         }
 
         function saveEditingRow(id) {
@@ -298,9 +361,8 @@
                 targetItem.budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
                 targetItem.status = tr.querySelector('.row-status').value;
             }
-
             editingRowIds.delete(id);
-            applyFilters(); // refresh system datasets
+            applyFilters();
         }
 
         function cancelEditingRow(id) {
@@ -309,7 +371,7 @@
         }
 
         function deleteRow(id) {
-            if (confirm("Are you sure you want to remove this line item registry entry?")) {
+            if (confirm("Permanently delete this line item?")) {
                 dataset = dataset.filter(item => item.id !== id);
                 editingRowIds.delete(id);
                 applyFilters();
@@ -322,14 +384,14 @@
                 id: nextId,
                 quarter: "First Quarter",
                 equipment_no: "BH-NEW",
-                activity: "Enter planned operation task details...",
+                activity: "Describe operational target task workflow details...",
                 reference: "",
                 budget: 0,
                 status: "Pending",
                 prefix: "BH"
             };
-            dataset.unshift(newObj); // push to top 
-            editingRowIds.add(nextId); // immediately drop into inline modification view
+            dataset.unshift(newObj);
+            editingRowIds.add(nextId);
             applyFilters();
         }
 
@@ -357,8 +419,6 @@
             const totalBudget = dataset.reduce((sum, i) => sum + i.budget, 0);
 
             document.getElementById('metricTotal').innerText = total;
-            document.getElementById('metricCompleted').innerText = done;
-            document.getElementById('metricDocs').innerText = docs;
             document.getElementById('metricPending').innerText = pending;
             document.getElementById('metricBudget').innerText = '₱' + totalBudget.toLocaleString();
 
@@ -403,20 +463,19 @@
         function renderTable(data) {
             const tbody = document.getElementById('projectTableBody');
             tbody.innerHTML = '';
-            document.getElementById('tableRowCounter').innerText = `Showing ${data.length} items`;
+            document.getElementById('tableRowCounter').innerText = `${data.length} Items Listed`;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 bg-slate-50 font-medium">No matching items records.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-muted-ui bg-black/10">No items match the chosen query limits.</td></tr>`;
                 return;
             }
 
             data.forEach(item => {
                 const row = document.createElement('tr');
                 row.id = `row-${item.id}`;
-                row.className = "hover:bg-slate-50/80 transition-colors";
+                row.className = "hover:bg-white/[0.02] transition-colors border-b border-dark-ui";
 
                 if (editingRowIds.has(item.id)) {
-                    // LOCAL EDIT ACTIVE STATE LAYOUT
                     row.innerHTML = `
                         <td class="p-2">
                             <select class="row-quarter edit-input w-full p-1 text-xs rounded">
@@ -447,43 +506,40 @@
                         </td>
                         <td class="p-2 text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <button onclick="saveEditingRow(${item.id})" class="text-emerald-600 hover:text-emerald-800 p-1" title="Save Row Changes">
+                                <button onclick="saveEditingRow(${item.id})" class="text-emerald-400 hover:text-emerald-300 p-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                                 </button>
-                                <button onclick="cancelEditingRow(${item.id})" class="text-slate-400 hover:text-slate-600 p-1" title="Cancel">
+                                <button onclick="cancelEditingRow(${item.id})" class="text-muted-ui hover:text-white p-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
                         </td>
                     `;
                 } else {
-                    // STATIC EXECUTIVE ROW VIEW WITH ACTIONS
-                    let badgeStyle = "bg-amber-50 text-amber-700 border-amber-200";
-                    if(item.status === 'Done') badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                    if(item.status === 'With Documents') badgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+                    let badgeStyle = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    if(item.status === 'Done') badgeStyle = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    if(item.status === 'With Documents') badgeStyle = "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
 
                     row.innerHTML = `
-                        <td class="p-3 text-xs font-semibold text-slate-400">${item.quarter}</td>
-                        <td class="p-3 font-bold text-slate-800">${item.equipment_no}</td>
-                        <td class="p-3 text-slate-600 font-medium">${item.activity}</td>
-                        <td class="p-3 text-xs text-slate-400 font-mono">${item.reference || '-'}</td>
-                        <td class="p-3 text-right font-semibold text-slate-700">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '-'}</td>
-                        <td class="p-3 text-center">
-                            <span class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeStyle}">
+                        <td class="p-3.5 text-muted-ui font-medium">${item.quarter}</td>
+                        <td class="p-3.5 font-bold text-white">${item.equipment_no}</td>
+                        <td class="p-3.5 text-slate-300 font-normal">${item.activity}</td>
+                        <td class="p-3.5 text-xs text-muted-ui font-mono">${item.reference || '—'}</td>
+                        <td class="p-3.5 text-right font-semibold text-white">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
+                        <td class="p-3.5 text-center">
+                            <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md border ${badgeStyle}">
                                 ${item.status}
                             </span>
                         </td>
-                        <td class="p-3">
-                            <div class="flex items-center justify-center gap-3 text-slate-400">
-                                <!-- Edit Icon matching image_c6fe0a.png -->
-                                <button onclick="startEditingRow(${item.id})" class="hover:text-slate-700 transition-colors p-1" title="Edit row item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <td class="p-3.5">
+                            <div class="flex items-center justify-center gap-3 text-muted-ui">
+                                <button onclick="startEditingRow(${item.id})" class="hover:text-white transition-colors p-1" title="Edit line item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <!-- Delete Icon matching image_c6fe0a.png -->
-                                <button onclick="deleteRow(${item.id})" class="hover:text-red-500 transition-colors p-1" title="Delete row item">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <button onclick="deleteRow(${item.id})" class="hover:text-red-400 transition-colors p-1" title="Delete item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                 </button>
@@ -506,7 +562,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataset, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "2026_CAPEX_INLINE_UPDATED.json");
+            downloadAnchor.setAttribute("download", "CAPEX_Workspace_Export.json");
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
