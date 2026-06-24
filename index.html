@@ -31,7 +31,7 @@
             
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                 <div class="relative w-full sm:w-48">
-                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
+                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
                 </div>
                 <select id="filterQuarter" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Quarters</option>
@@ -54,7 +54,7 @@
                     <option value="Mid">₱100K - ₱500K</option>
                     <option value="High">Above ₱500K</option>
                 </select>
-                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1 ml-auto sm:ml-0">
+                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
                     <span>+</span> Add Project
                 </button>
             </div>
@@ -166,7 +166,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyOV1AWAB1k4SGwIUM2weQ-qPsbEQmWBbZ3aEbw-cnhrK2xopUzL5uoV1gcaYEUaZpDrQ/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxBw1-Wlx9V4ThmZ1HrXqI3ljaFEzFAkJRSjctWoGUFsgkdIJLrGjekm3mCUzaWE5QCWw/exec"; 
         const SHEET_PATH = "Sheet1"; 
 
         let dataset = [];
@@ -174,7 +174,7 @@
         let quarterChartInstance = null;
         let budgetChartInstance = null;
 
-        // Register Chart.js DataLabels plugin globally
+        // Register the DataLabels plugin to show raw values inside bars/doughnuts
         Chart.register(ChartDataLabels);
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -183,14 +183,15 @@
             loadDatabaseFromAPI();
         });
 
-        // Prevention check against accidental closing when rows are actively being modified
+        // Enhanced Feature: Guard check to prevent data loss if users exit while modifying records
         window.addEventListener('beforeunload', (e) => {
             if (editingRowIds.size > 0) {
                 e.preventDefault();
-                e.returnValue = 'You have unsaved row edits ongoing. Are you sure you want to exit?';
+                e.returnValue = 'You have unsaved project modifications. Are you sure you want to exit?';
             }
         });
 
+        // Enhanced Feature: Animated CSS Skeleton Loader layout fallback
         function renderSkeletonLoaders() {
             const tbody = document.getElementById('projectTableBody');
             if (!tbody) return;
@@ -199,7 +200,7 @@
                 skeletonHtml += `
                     <tr class="animate-pulse border-b border-[#2d3139]">
                         <td class="py-3 px-3 pl-4"><div class="h-3 bg-[#2d3139] rounded w-16"></div></td>
-                        <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-14 font-bold"></div></td>
+                        <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-14"></div></td>
                         <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-3/4"></div></td>
                         <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-24"></div></td>
                         <td class="py-3 px-3 text-right"><div class="h-3 bg-[#2d3139] rounded w-16 ml-auto"></div></td>
@@ -211,7 +212,7 @@
         }
 
         async function loadDatabaseFromAPI() {
-            setSyncStatus("Fetching Data...", "text-amber-400 bg-amber-500/10");
+            setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
             try {
                 const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
                 const result = await response.json();
@@ -246,7 +247,7 @@
             } catch (error) {
                 console.error("Database loading failed:", error);
                 setSyncStatus("API Connection Error", "text-red-400 bg-red-500/10");
-                document.getElementById('projectTableBody').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400 font-semibold">Failed to establish active secure link connection with data arrays.</td></tr>`;
+                document.getElementById('projectTableBody').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400 font-semibold">Failed to establish active data link connection.</td></tr>`;
             }
         }
 
@@ -281,7 +282,7 @@
                             datalabels: {
                                 color: '#ffffff',
                                 font: { weight: 'bold', size: 11 },
-                                formatter: function(value) { return value > 0 ? value : ''; }
+                                formatter: (val) => val > 0 ? val : ''
                             }
                         },
                         scales: {
@@ -307,7 +308,7 @@
                             datalabels: {
                                 color: '#ffffff',
                                 font: { weight: 'bold', size: 10 },
-                                formatter: function(value) {
+                                formatter: (value) => {
                                     if (!value || value === 0) return '';
                                     if (value >= 1.0e6) return '₱' + (value / 1.0e6).toFixed(1) + 'M';
                                     if (value >= 1.0e3) return '₱' + (value / 1.0e3).toFixed(0) + 'K';
@@ -331,7 +332,7 @@
                 const matchQ = (qFilter === 'All' || item.quarter.toLowerCase().trim() === qFilter.toLowerCase().trim());
                 const matchP = (prefixFilter === 'All' || (item.equipment_no || '').toUpperCase().startsWith(prefixFilter));
                 
-                // Multi-Tier Budget Filtering Calculations
+                // Enhanced Logic: Multi-Tier Budget evaluation
                 let matchB = true;
                 const bVal = parseFloat(item.budget) || 0;
                 if (budgetTierFilter === 'Low') matchB = (bVal < 100000);
@@ -357,6 +358,8 @@
         function updateVisualGraphsAndMetrics(filteredData) {
             const totalCount = filteredData.length;
             const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
+            
+            // Calculate Average Cost Metric dynamically
             const avgBudget = totalCount > 0 ? Math.round(totalBudget / totalCount) : 0;
             
             const doneCount = filteredData.filter(i => i.status.toLowerCase() === 'done').length;
@@ -451,8 +454,8 @@
                         <td class="p-1"><input type="number" value="${item.budget}" class="row-budget edit-input w-full text-right rounded text-xs"></td>
                         <td class="p-1"><select class="row-status edit-input w-full rounded font-bold text-xs"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
                         <td class="p-1 text-center">
-                            <button onclick="saveEditingRow(${item.id})" class="text-[#10b981] font-bold px-1.5 mr-1" title="Save Changes">✓</button>
-                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-500 font-bold px-1.5" title="Cancel Edit">✕</button>
+                            <button onclick="saveEditingRow(${item.id})" class="text-[#10b981] font-bold px-1.5 mr-1" title="Save changes">✓</button>
+                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-500 font-bold px-1.5" title="Cancel edit">✕</button>
                         </td>`;
                 } else {
                     let badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
@@ -467,8 +470,8 @@
                         <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
                         <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
                         <td class="py-1.5 px-3 text-center text-xs">
-                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2.5" title="Edit Row">📝</button>
-                            <button onclick="deleteRow(${item.id})" class="text-slate-500 hover:text-red-400 font-bold" title="Delete Row">🗑️</button>
+                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2.5" title="Edit row data">📝</button>
+                            <button onclick="deleteRow(${item.id})" class="text-slate-500 hover:text-red-400 font-bold" title="Delete record entry">🗑️</button>
                         </td>`;
                 }
                 tbody.appendChild(row);
@@ -560,13 +563,14 @@
             }
         }
 
+        // Enhanced Feature: Atomic Row Deletion controller mapping back to Google Sheets database
         async function deleteRow(id) {
-            if (!confirm("Are you sure you want to permanently delete this project item entry?")) return;
+            if (!confirm("Are you sure you want to permanently delete this project record?")) return;
             
             setSyncStatus("Deleting Row...", "text-red-400 bg-red-500/10");
             
             const queryParams = new URLSearchParams({
-                action: 'delete', 
+                action: 'delete',
                 path: SHEET_PATH,
                 id: id
             });
@@ -574,6 +578,7 @@
             try {
                 await fetch(`${API_URL}?${queryParams.toString()}`, { method: 'GET', mode: 'no-cors' });
                 
+                // Locally drop row item from dashboard scope arrays
                 dataset = dataset.filter(item => item.id !== id);
                 editingRowIds.delete(id);
                 
