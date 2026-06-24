@@ -22,14 +22,23 @@
 
     <div class="max-w-[1600px] mx-auto bg-[#1c1f22] p-4 rounded-xl border border-[#2d3139] shadow-xl">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-4 border-b border-[#2d3139] gap-3">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center pb-4 border-b border-[#2d3139] gap-4">
             <div>
                 <span class="text-[10px] font-bold text-[#10b981] tracking-wider uppercase bg-[#10b981]/10 px-2 py-0.5 rounded">OMEGA ASIA EQUIPMENT CORP</span>
                 <h1 class="text-xl font-bold text-white mt-1 tracking-tight">2026 OVERALL CAPEX PROJECTS</h1>
                 <p class="text-xs text-slate-400 mt-0.5">Heavy Equipment Major Component Repairs</p>
             </div>
+
+            <div class="flex items-center bg-[#22252a] p-1 border border-[#2d3139] rounded-xl self-stretch lg:self-auto justify-center">
+                <button onclick="switchTab('dashboard')" id="btnTabDashboard" class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]">
+                    📊 Main Dashboard
+                </button>
+                <button onclick="switchTab('gantt')" id="btnTabGantt" class="px-4 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200">
+                    📅 Fleet Gantt Scheduler
+                </button>
+            </div>
             
-            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <div id="globalFilterPanel" class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                 <div class="relative w-full sm:w-56">
                     <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
                 </div>
@@ -54,103 +63,138 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
-            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
-                <div>
-                    <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Total Tracked Tasks</p>
-                    <h3 class="text-xl font-bold text-white mt-0.5" id="metricTotalTracked">0</h3>
+
+        <div id="pageViewDashboard" class="block">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Total Tracked Tasks</p>
+                        <h3 class="text-xl font-bold text-white mt-0.5" id="metricTotalTracked">0</h3>
+                    </div>
+                </div>
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Budget Amount</p>
+                        <h3 class="text-xl font-bold text-white mt-0.5" id="metricBudget">₱0</h3>
+                    </div>
+                </div>
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Completion Rate</p>
+                        <h3 class="text-xl font-bold text-[#10b981] mt-0.5" id="metricCompRate">0%</h3>
+                    </div>
+                    <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
+                        <div id="barCompRate" class="bg-[#10b981] h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Overall Progress</p>
+                        <h3 class="text-xl font-bold text-blue-400 mt-0.5" id="metricPipeline">0%</h3>
+                    </div>
+                    <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
+                        <div id="barPipeline" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
-            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
-                <div>
-                    <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Budget Amount</p>
-                    <h3 class="text-xl font-bold text-white mt-0.5" id="metricBudget">₱0</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
+                <div class="lg:col-span-2 p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
+                    <div class="mb-2">
+                        <h4 class="text-xs font-bold text-slate-200">PROJECT TIMELINE STATUS</h4>
+                    </div>
+                    <div class="h-44 relative">
+                        <canvas id="quarterChart"></canvas>
+                    </div>
+                </div>
+                <div class="p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
+                    <div class="mb-2">
+                        <h4 class="text-xs font-bold text-slate-200">BUDGET SHARE BY FLEET</h4>
+                    </div>
+                    <div class="h-44 relative">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
-                <div>
-                    <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Completion Rate</p>
-                    <h3 class="text-xl font-bold text-[#10b981] mt-0.5" id="metricCompRate">0%</h3>
+
+            <div class="border border-[#2d3139] rounded-xl overflow-hidden bg-[#22252a] mt-4">
+                <div class="p-3 border-b border-[#2d3139] flex justify-between items-center bg-[#1c1f22]">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-200">MASTER PROJECTS REGISTRY</h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="syncIndicator" class="text-[10px] font-medium text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">Connecting...</span>
+                        <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
+                    </div>
                 </div>
-                <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
-                    <div id="barCompRate" class="bg-[#10b981] h-full transition-all duration-500" style="width: 0%"></div>
+
+                <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-[#1c1f22] z-10 shadow-sm">
+                            <tr class="border-b border-[#2d3139] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="py-2 px-3 pl-4 w-32">Quarter</th>
+                                <th class="py-2 px-3 w-28">Asset No.</th>
+                                <th class="py-2 px-3">Planned Activity Action Details</th>
+                                <th class="py-2 px-3 w-40">Document / PO Ref</th>
+                                <th class="py-2 px-3 text-right w-36">Budget</th>
+                                <th class="py-2 px-3 text-center w-32">Status</th>
+                                <th class="py-2 px-3 text-center w-24">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTableBody" class="text-xs divide-y divide-[#2d3139]">
+                            <tr>
+                                <td colspan="7" class="py-8 text-center text-slate-400 font-medium">Loading live data fields from API...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
-                <div>
-                    <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Overall Progress</p>
-                    <h3 class="text-xl font-bold text-blue-400 mt-0.5" id="metricPipeline">0%</h3>
+
+            <div class="mt-3 flex flex-wrap gap-3 items-center justify-end px-1 text-[11px] font-medium text-slate-500">
+                <div class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-[#10b981] inline-block"></span>
+                    <span>Done: <strong id="metricDoneStatus" class="text-slate-300">0</strong></span>
                 </div>
-                <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
-                    <div id="barPipeline" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                <div class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                    <span>With Docs: <strong id="metricWithDocs" class="text-slate-300">0</strong></span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
+                    <span>Pending: <strong id="metricPending" class="text-slate-300">0</strong></span>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
-            <div class="lg:col-span-2 p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
-                <div class="mb-2">
-                    <h4 class="text-xs font-bold text-slate-200">PROJECT TIMELINE STATUS</h4>
-                </div>
-                <div class="h-44 relative">
-                    <canvas id="quarterChart"></canvas>
-                </div>
-            </div>
-            <div class="p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
-                <div class="mb-2">
-                    <h4 class="text-xs font-bold text-slate-200">BUDGET SHARE BY FLEET</h4>
-                </div>
-                <div class="h-44 relative">
-                    <canvas id="budgetChart"></canvas>
-                </div>
-            </div>
-        </div>
 
-        <div class="border border-[#2d3139] rounded-xl overflow-hidden bg-[#22252a] mt-4">
-            <div class="p-3 border-b border-[#2d3139] flex justify-between items-center bg-[#1c1f22]">
-                <div>
-                    <h3 class="text-xs font-bold text-slate-200">MASTER PROJECTS REGISTRY</h3>
+        <div id="pageViewGantt" class="hidden my-4">
+            <div class="bg-[#22252a] p-4 rounded-xl border border-[#2d3139]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 border-b border-[#2d3139] mb-4 gap-2">
+                    <div>
+                        <h2 class="text-sm font-bold text-white tracking-wide uppercase">2026 Fleet Maintenance Gantt Roadmap</h2>
+                        <p class="text-xs text-slate-400">Timeline view sorted chronologically by Asset Execution Schedule</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-slate-400">
+                        <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/20 border border-amber-500/40 rounded"></span> Pending</div>
+                        <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500/40 rounded"></span> With Docs</div>
+                        <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-[#10b981]/20 border border-[#10b981]/40 rounded"></span> Done</div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span id="syncIndicator" class="text-[10px] font-medium text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">Connecting...</span>
-                    <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
+
+                <div class="border border-[#2d3139] rounded-lg overflow-hidden">
+                    <div class="grid grid-cols-12 bg-[#1c1f22] border-b border-[#2d3139] text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2.5">
+                        <div class="col-span-3 text-left pl-4 border-r border-[#2d3139]">Equipment Log Target</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q1 (Jan-Mar)</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q2 (Apr-Jun)</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q3 (Jul-Sep)</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q4 (Oct-Dec)</div>
+                        <div class="col-span-1">Status</div>
+                    </div>
+
+                    <div id="ganttChartRowsContainer" class="divide-y divide-[#2d3139] max-h-[580px] overflow-y-auto bg-[#1e2124]">
+                        <p class="text-xs text-center py-12 text-slate-400">Compiling dataset strings into timeline coordinates...</p>
+                    </div>
                 </div>
-            </div>
-
-            <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="sticky top-0 bg-[#1c1f22] z-10 shadow-sm">
-                        <tr class="border-b border-[#2d3139] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                            <th class="py-2 px-3 pl-4 w-32">Quarter</th>
-                            <th class="py-2 px-3 w-28">Asset No.</th>
-                            <th class="py-2 px-3">Planned Activity Action Details</th>
-                            <th class="py-2 px-3 w-40">Document / PO Ref</th>
-                            <th class="py-2 px-3 text-right w-36">Budget</th>
-                            <th class="py-2 px-3 text-center w-32">Status</th>
-                            <th class="py-2 px-3 text-center w-24">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="projectTableBody" class="text-xs divide-y divide-[#2d3139]">
-                        <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-400 font-medium">Loading live data fields from API...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="mt-3 flex flex-wrap gap-3 items-center justify-end px-1 text-[11px] font-medium text-slate-500">
-            <div class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-[#10b981] inline-block"></span>
-                <span>Done: <strong id="metricDoneStatus" class="text-slate-300">0</strong></span>
-            </div>
-            <div class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
-                <span>With Docs: <strong id="metricWithDocs" class="text-slate-300">0</strong></span>
-            </div>
-            <div class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
-                <span>Pending: <strong id="metricPending" class="text-slate-300">0</strong></span>
             </div>
         </div>
 
@@ -165,13 +209,36 @@
         let quarterChartInstance = null;
         let budgetChartInstance = null;
 
-        // Register the datalabels plugin globally to Chart.js
         Chart.register(ChartDataLabels);
 
         window.addEventListener('DOMContentLoaded', () => {
             initCharts();
             loadDatabaseFromAPI();
         });
+
+        // VIEW INTERACTIVE TABS ROUTER LOGIC
+        function switchTab(targetTab) {
+            const tabDash = document.getElementById('pageViewDashboard');
+            const tabGantt = document.getElementById('pageViewGantt');
+            const btnDash = document.getElementById('btnTabDashboard');
+            const btnGantt = document.getElementById('btnTabGantt');
+            const filterPanel = document.getElementById('globalFilterPanel');
+
+            if (targetTab === 'gantt') {
+                tabDash.classList.replace('block', 'hidden');
+                tabGantt.classList.replace('hidden', 'block');
+                btnGantt.className = "px-4 py-2 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
+                btnDash.className = "px-4 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200";
+                if (filterPanel) filterPanel.style.visibility = "hidden"; // Hide interactive modifiers while layout shifts to Gantt
+                renderFleetGanttChart();
+            } else {
+                tabGantt.classList.replace('block', 'hidden');
+                tabDash.classList.replace('hidden', 'block');
+                btnDash.className = "px-4 py-2 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
+                btnGantt.className = "px-4 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200";
+                if (filterPanel) filterPanel.style.visibility = "visible";
+            }
+        }
 
         async function loadDatabaseFromAPI() {
             setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
@@ -204,7 +271,6 @@
                     };
                 });
                 
-                // FIXED SORTING: Orders table rows matching your spreadsheet sequence (ID 1 -> 52)
                 parsed.sort((a, b) => a.id - b.id);
                 dataset = parsed;
                 
@@ -289,6 +355,52 @@
                     }
                 });
             }
+        }
+
+        // GENERATE DYNAMICS DEDICATED CHRONOLOGICAL FLEET GANTT BOARD 
+        function renderFleetGanttChart() {
+            const targetContainer = document.getElementById('ganttChartRowsContainer');
+            if (!targetContainer) return;
+            targetContainer.innerHTML = '';
+
+            if (dataset.length === 0) {
+                targetContainer.innerHTML = `<p class="text-xs text-center py-12 text-slate-500">No active assets registered in spreadsheet registry</p>`;
+                return;
+            }
+
+            dataset.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 text-xs text-slate-300 py-3 items-center hover:bg-[#282c32]/30 transition-colors";
+
+                // Map styling dynamically matching asset execution conditions
+                let colorClasses = "bg-amber-500/20 border-amber-500 text-amber-400";
+                if (item.status.toLowerCase() === 'done') colorClasses = "bg-[#10b981]/20 border-[#10b981] text-[#10b981]";
+                if (item.status.toLowerCase() === 'with documents' || item.status.toLowerCase() === 'with docs') colorClasses = "bg-blue-500/20 border-blue-500 text-blue-400";
+
+                let q1Block = "", q2Block = "", q3Block = "", q4Block = "";
+                let shortText = item.activity.length > 40 ? item.activity.substring(0, 38) + '...' : item.activity;
+                
+                const timeVisualNode = `<div class="mx-2 p-1.5 rounded border text-[10px] font-bold truncate text-center ${colorClasses}" title="${item.activity}">${shortText}</div>`;
+
+                let normQ = item.quarter.toLowerCase().trim();
+                if (normQ.includes('first') || normQ === 'q1') q1Block = timeVisualNode;
+                else if (normQ.includes('second') || normQ === 'q2') q2Block = timeVisualNode;
+                else if (normQ.includes('third') || normQ === 'q3') q3Block = timeVisualNode;
+                else if (normQ.includes('fourth') || normQ === 'q4') q4Block = timeVisualNode;
+
+                row.innerHTML = `
+                    <div class="col-span-3 pl-4 border-r border-[#2d3139]/50 flex flex-col justify-center">
+                        <span class="font-bold text-slate-100">${item.equipment_no}</span>
+                        <span class="text-[10px] text-slate-400 tracking-tight max-w-[180px] truncate" title="${item.activity}">${item.activity}</span>
+                    </div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q1Block}</div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q2Block}</div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q3Block}</div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q4Block}</div>
+                    <div class="col-span-1 text-center font-bold text-[10px] tracking-wide uppercase px-1 truncate" title="${item.status}">${item.status.replace('Documents','Docs')}</div>
+                `;
+                targetContainer.appendChild(row);
+            });
         }
 
         function applyFilters() {
@@ -486,7 +598,6 @@
 
         async function addNewRow() {
             setSyncStatus("Appending to Sheet...", "text-amber-400 bg-amber-500/10");
-            
             const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => parseInt(o.id) || 0)) + 1 : 1;
             
             const newRowObj = {
@@ -521,7 +632,7 @@
                     return;
                 }
                 
-                dataset.push(newRowObj); // Appends new element chronologically to array layout
+                dataset.push(newRowObj);
                 editingRowIds.add(nextId); 
                 setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
                 applyFilters();
