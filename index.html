@@ -14,7 +14,7 @@
         .edit-input:focus { outline: 2px solid #10b981; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #1a1d21; }
-        ::-webkit-scrollbar-thumb { background: #374151; rounded: 3px; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
     </style>
 </head>
@@ -30,8 +30,8 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                <div class="relative w-full sm:w-56">
-                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
+                <div class="relative w-full sm:w-48">
+                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
                 </div>
                 <select id="filterQuarter" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Quarters</option>
@@ -48,13 +48,19 @@
                     <option value="RR">RR (Road Rollers)</option>
                     <option value="RG">RG (Road Graders)</option>
                 </select>
-                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
+                <select id="filterBudgetTier" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
+                    <option value="All">All Budgets</option>
+                    <option value="Low">Below ₱100K</option>
+                    <option value="Mid">₱100K - ₱500K</option>
+                    <option value="High">Above ₱500K</option>
+                </select>
+                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1 ml-auto sm:ml-0">
                     <span>+</span> Add Project
                 </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 my-4">
             <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Total Tracked Tasks</p>
@@ -69,6 +75,12 @@
             </div>
             <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
                 <div>
+                    <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Avg Project Cost</p>
+                    <h3 class="text-xl font-bold text-amber-400 mt-0.5" id="metricAvgCost">₱0</h3>
+                </div>
+            </div>
+            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Completion Rate</p>
                     <h3 class="text-xl font-bold text-[#10b981] mt-0.5" id="metricCompRate">0%</h3>
                 </div>
@@ -76,7 +88,7 @@
                     <div id="barCompRate" class="bg-[#10b981] h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
-            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+            <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between col-span-2 md:col-span-1">
                 <div>
                     <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Pipeline Progress</p>
                     <h3 class="text-xl font-bold text-blue-400 mt-0.5" id="metricPipeline">0%</h3>
@@ -127,14 +139,11 @@
                             <th class="py-2 px-3 w-40">Document / PO Ref</th>
                             <th class="py-2 px-3 text-right w-36">Budget</th>
                             <th class="py-2 px-3 text-center w-32">Status</th>
-                            <th class="py-2 px-3 text-center w-24">Actions</th>
+                            <th class="py-2 px-3 text-center w-28">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="projectTableBody" class="text-xs divide-y divide-[#2d3139]">
-                        <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-400 font-medium">Loading live data fields from API...</td>
-                        </tr>
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
@@ -157,7 +166,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbza5aknWQDAlNOoHGFEZpJhdM7UKjP5c-0fonhxmGDlFZCW94cf5OjrfukvvPEUuww9OQ/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbyOV1AWAB1k4SGwIUM2weQ-qPsbEQmWBbZ3aEbw-cnhrK2xopUzL5uoV1gcaYEUaZpDrQ/exec"; 
         const SHEET_PATH = "Sheet1"; 
 
         let dataset = [];
@@ -165,16 +174,44 @@
         let quarterChartInstance = null;
         let budgetChartInstance = null;
 
-        // 2. Register the plugin to Chart.js globally
+        // Register Chart.js DataLabels plugin globally
         Chart.register(ChartDataLabels);
 
         window.addEventListener('DOMContentLoaded', () => {
             initCharts();
+            renderSkeletonLoaders();
             loadDatabaseFromAPI();
         });
 
+        // Prevention check against accidental closing when rows are actively being modified
+        window.addEventListener('beforeunload', (e) => {
+            if (editingRowIds.size > 0) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved row edits ongoing. Are you sure you want to exit?';
+            }
+        });
+
+        function renderSkeletonLoaders() {
+            const tbody = document.getElementById('projectTableBody');
+            if (!tbody) return;
+            let skeletonHtml = '';
+            for(let i = 0; i < 5; i++) {
+                skeletonHtml += `
+                    <tr class="animate-pulse border-b border-[#2d3139]">
+                        <td class="py-3 px-3 pl-4"><div class="h-3 bg-[#2d3139] rounded w-16"></div></td>
+                        <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-14 font-bold"></div></td>
+                        <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-3/4"></div></td>
+                        <td class="py-3 px-3"><div class="h-3 bg-[#2d3139] rounded w-24"></div></td>
+                        <td class="py-3 px-3 text-right"><div class="h-3 bg-[#2d3139] rounded w-16 ml-auto"></div></td>
+                        <td class="py-3 px-3 text-center"><div class="h-4 bg-[#2d3139] rounded w-16 mx-auto"></div></td>
+                        <td class="py-3 px-3 text-center"><div class="h-3 bg-[#2d3139] rounded w-12 mx-auto"></div></td>
+                    </tr>`;
+            }
+            tbody.innerHTML = skeletonHtml;
+        }
+
         async function loadDatabaseFromAPI() {
-            setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
+            setSyncStatus("Fetching Data...", "text-amber-400 bg-amber-500/10");
             try {
                 const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
                 const result = await response.json();
@@ -209,6 +246,7 @@
             } catch (error) {
                 console.error("Database loading failed:", error);
                 setSyncStatus("API Connection Error", "text-red-400 bg-red-500/10");
+                document.getElementById('projectTableBody').innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-400 font-semibold">Failed to establish active secure link connection with data arrays.</td></tr>`;
             }
         }
 
@@ -230,23 +268,20 @@
                     data: {
                         labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                         datasets: [
-                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 50 },
-                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 50 },
-                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 50 }
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 45 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 45 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 45 }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { 
-                            legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 4, color: '#94a3b8', font: { size: 10 } } },
-                            // 3. Configured Datalabels for Timeline Status Bars
+                            legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 6, color: '#94a3b8', font: { size: 10 } } },
                             datalabels: {
                                 color: '#ffffff',
                                 font: { weight: 'bold', size: 11 },
-                                formatter: function(value) {
-                                    return value > 0 ? value : ''; // Only show text if value is > 0
-                                }
+                                formatter: function(value) { return value > 0 ? value : ''; }
                             }
                         },
                         scales: {
@@ -268,8 +303,7 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: { 
-                            legend: { position: 'bottom', labels: { boxWidth: 8, padding: 4, color: '#94a3b8', font: { size: 10 } } },
-                            // 4. Configured Datalabels for Budget Doughnut Chart (Formats as ₱ Short Currency)
+                            legend: { position: 'bottom', labels: { boxWidth: 8, padding: 6, color: '#94a3b8', font: { size: 10 } } },
                             datalabels: {
                                 color: '#ffffff',
                                 font: { weight: 'bold', size: 10 },
@@ -290,12 +324,20 @@
         function applyFilters() {
             const qFilter = document.getElementById('filterQuarter')?.value || 'All';
             const prefixFilter = document.getElementById('filterPrefix')?.value || 'All';
+            const budgetTierFilter = document.getElementById('filterBudgetTier')?.value || 'All';
             const searchVal = document.getElementById('searchBar')?.value.toLowerCase() || '';
 
             const filtered = dataset.filter(item => {
                 const matchQ = (qFilter === 'All' || item.quarter.toLowerCase().trim() === qFilter.toLowerCase().trim());
                 const matchP = (prefixFilter === 'All' || (item.equipment_no || '').toUpperCase().startsWith(prefixFilter));
                 
+                // Multi-Tier Budget Filtering Calculations
+                let matchB = true;
+                const bVal = parseFloat(item.budget) || 0;
+                if (budgetTierFilter === 'Low') matchB = (bVal < 100000);
+                else if (budgetTierFilter === 'Mid') matchB = (bVal >= 100000 && bVal <= 500000);
+                else if (budgetTierFilter === 'High') matchB = (bVal > 500000);
+
                 const poString = (item.po_reference || "").toLowerCase();
                 const activityString = (item.activity || "").toLowerCase();
                 const equipString = (item.equipment_no || "").toLowerCase();
@@ -305,7 +347,7 @@
                                 equipString.includes(searchVal) ||
                                 poString.includes(searchVal));
                 
-                return matchQ && matchP && matchS;
+                return matchQ && matchP && matchB && matchS;
             });
 
             renderTable(filtered);
@@ -315,6 +357,7 @@
         function updateVisualGraphsAndMetrics(filteredData) {
             const totalCount = filteredData.length;
             const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
+            const avgBudget = totalCount > 0 ? Math.round(totalBudget / totalCount) : 0;
             
             const doneCount = filteredData.filter(i => i.status.toLowerCase() === 'done').length;
             const docsCount = filteredData.filter(i => i.status.toLowerCase() === 'with documents' || i.status.toLowerCase() === 'with docs').length;
@@ -332,6 +375,9 @@
             
             const budgetNode = document.getElementById('metricBudget');
             if (budgetNode) budgetNode.innerText = '₱' + totalBudget.toLocaleString();
+
+            const avgNode = document.getElementById('metricAvgCost');
+            if (avgNode) avgNode.innerText = '₱' + avgBudget.toLocaleString();
             
             setNodeText('metricCompRate', completionRate + '%');
             if (document.getElementById('barCompRate')) document.getElementById('barCompRate').style.width = completionRate + '%';
@@ -405,8 +451,8 @@
                         <td class="p-1"><input type="number" value="${item.budget}" class="row-budget edit-input w-full text-right rounded text-xs"></td>
                         <td class="p-1"><select class="row-status edit-input w-full rounded font-bold text-xs"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
                         <td class="p-1 text-center">
-                            <button onclick="saveEditingRow(${item.id})" class="text-[#10b981] font-bold px-1 mr-1">✓</button>
-                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-500 font-bold px-1">✕</button>
+                            <button onclick="saveEditingRow(${item.id})" class="text-[#10b981] font-bold px-1.5 mr-1" title="Save Changes">✓</button>
+                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-500 font-bold px-1.5" title="Cancel Edit">✕</button>
                         </td>`;
                 } else {
                     let badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
@@ -420,8 +466,9 @@
                         <td class="py-1.5 px-3 text-slate-400 font-mono text-[11px]">${item.po_reference || '—'}</td>
                         <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
                         <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
-                        <td class="py-1.5 px-3 text-center text-[13px]">
-                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2" title="Edit row data">📝</button>
+                        <td class="py-1.5 px-3 text-center text-xs">
+                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white mr-2.5" title="Edit Row">📝</button>
+                            <button onclick="deleteRow(${item.id})" class="text-slate-500 hover:text-red-400 font-bold" title="Delete Row">🗑️</button>
                         </td>`;
                 }
                 tbody.appendChild(row);
@@ -510,6 +557,31 @@
             } catch (err) {
                 console.error(err);
                 setSyncStatus("Insertion error", "text-red-400 bg-red-500/10");
+            }
+        }
+
+        async function deleteRow(id) {
+            if (!confirm("Are you sure you want to permanently delete this project item entry?")) return;
+            
+            setSyncStatus("Deleting Row...", "text-red-400 bg-red-500/10");
+            
+            const queryParams = new URLSearchParams({
+                action: 'delete', 
+                path: SHEET_PATH,
+                id: id
+            });
+
+            try {
+                await fetch(`${API_URL}?${queryParams.toString()}`, { method: 'GET', mode: 'no-cors' });
+                
+                dataset = dataset.filter(item => item.id !== id);
+                editingRowIds.delete(id);
+                
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
+            } catch (err) {
+                console.error("Deletion failed:", err);
+                setSyncStatus("Delete error", "text-red-400 bg-red-500/10");
             }
         }
     </script>
