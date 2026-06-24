@@ -3,279 +3,770 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gantt Chart Management Hub</title>
+    <title>2026 CAPEX Interactive Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #111315; color: #f1f5f9; }
-        .win-input { background: #1e2227; border: 1px solid #3f444e; color: #fff; border-radius: 6px; padding: 6px 10px; font-size: 12px; width: 100%; }
-        .win-input:focus { border-color: #10b981; outline: none; }
+        body { font-family: 'Inter', sans-serif; background-color: #131517; color: #f8fafc; }
+        .edit-input { background: #22252a; border: 1px solid #3f444d; color: #f8fafc; font-weight: 500; padding: 2px 4px; }
+        .edit-input:focus { outline: 2px solid #10b981; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1d21; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-3 md:p-5">
 
-    <div class="max-w-6xl mx-auto bg-[#17191c] border border-[#2a2e35] rounded-xl shadow-2xl p-6">
+    <div class="max-w-[1600px] mx-auto bg-[#1c1f22] p-4 rounded-xl border border-[#2d3139] shadow-xl">
         
-        <div class="flex justify-between items-center pb-4 border-b border-[#2a2e35] mb-6">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center pb-4 border-b border-[#2d3139] gap-4">
             <div>
-                <span class="text-[10px] font-bold tracking-wider uppercase text-[#10b981] bg-[#10b981]/10 px-2 py-0.5 rounded">2026 FLEET MANAGER</span>
-                <h1 class="text-xl font-bold text-white mt-0.5">Horizontal Gantt Chart Matrix</h1>
+                <span class="text-[10px] font-bold text-[#10b981] tracking-wider uppercase bg-[#10b981]/10 px-2 py-0.5 rounded">OMEGA ASIA EQUIPMENT CORP</span>
+                <h1 class="text-xl font-bold text-white mt-1 tracking-tight">2026 OVERALL CAPEX PROJECTS</h1>
+                <p class="text-xs text-slate-400 mt-0.5">Heavy Equipment Major Component Repairs</p>
             </div>
-            <div id="statusTag" class="text-xs bg-[#2a2e35] px-3 py-1.5 rounded-lg text-slate-400 font-medium border border-[#373c46]">System Ready</div>
+
+            <div class="flex flex-wrap items-center bg-[#22252a] p-1 border border-[#2d3139] rounded-xl gap-1">
+                <button onclick="switchTab('dashboard')" id="btnTabDashboard" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]">
+                    📊 Main Dashboard
+                </button>
+                <button onclick="switchTab('gantt')" id="btnTabGantt" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200">
+                    📅 Fleet Gantt Scheduler
+                </button>
+                <button onclick="switchTab('jobcard')" id="btnTabJobCard" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200 hidden">
+                    📋 Asset Job Card View
+                </button>
+            </div>
+            
+            <div id="globalFilterPanel" class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                <div class="relative w-full sm:w-56">
+                    <input type="text" id="searchBar" oninput="applyFilters()" placeholder="Search asset, activity, or PO..." class="w-full pl-3 pr-3 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:bg-[#282c32] focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 focus:border-[#10b981] transition-all font-medium placeholder-slate-500">
+                </div>
+                <select id="filterQuarter" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
+                    <option value="All">All Quarters</option>
+                    <option value="First Quarter">First Quarter</option>
+                    <option value="Second Quarter">Second Quarter</option>
+                    <option value="Third Quarter">Third Quarter</option>
+                    <option value="Fourth Quarter">Fourth Quarter</option>
+                </select>
+                <select id="filterPrefix" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
+                    <option value="All">All Types</option>
+                    <option value="BH">BH (Excavators)</option>
+                    <option value="BD">BD (Dozers)</option>
+                    <option value="CR">CR (Cranes)</option>
+                    <option value="RR">RR (Road Rollers)</option>
+                    <option value="RG">RG (Road Graders)</option>
+                </select>
+                <button onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
+                    <span>+</span> Add Project
+                </button>
+            </div>
         </div>
 
-        <div id="dashboardView" class="block">
-            <div class="overflow-hidden rounded-xl border border-[#2a2e35] bg-[#1e2227]">
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-[#17191c] text-slate-400 font-semibold uppercase text-[10px] tracking-wider border-b border-[#2a2e35]">
-                        <tr>
-                            <th class="p-4">EQUIPMENT NO</th>
-                            <th class="p-4">DEFAULT WORK PLAN</th>
-                            <th class="p-4 text-center">ACTION MATRIX</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-[#2a2e35]">
-                        <tr>
-                            <td class="p-4 font-bold text-white">BH-135</td>
-                            <td class="p-4 text-slate-400">UNDERCARRIAGE CHANGE-OUT</td>
-                            <td class="p-4 text-center">
-                                <button onclick="launchWizardWorkspace('BH-135', 'UNDERCARRIAGE CHANGE-OUT')" class="bg-[#10b981] hover:bg-[#14d494] text-slate-950 font-bold px-4 py-1.5 rounded-md text-[11px] uppercase tracking-wide transition-all shadow">📊 Create Gantt Chart</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="p-4 font-bold text-white">BD-09</td>
-                            <td class="p-4 text-slate-400">ENGINE OVERHAUL PROCESS</td>
-                            <td class="p-4 text-center">
-                                <button onclick="launchWizardWorkspace('BD-09', 'ENGINE OVERHAUL PROCESS')" class="bg-[#10b981] hover:bg-[#14d494] text-slate-950 font-bold px-4 py-1.5 rounded-md text-[11px] uppercase tracking-wide transition-all shadow">📊 Create Gantt Chart</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <div id="workspaceView" class="hidden">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 id="activeEquipmentTitle" class="text-lg font-bold text-white">Equipment Profile</h2>
-                    <p id="activeProjectSubtitle" class="text-xs text-slate-400 mt-0.5">Project Details</p>
-                </div>
-                <button onclick="closeWorkspace()" class="text-xs bg-[#2a2e35] hover:bg-[#373c46] text-slate-300 px-3 py-1.5 rounded border border-[#373c46]">← Back to Registry</button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#1e2227] p-4 rounded-xl border border-[#2a2e35] mb-6">
-                <div>
-                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Date Start</label>
-                    <input type="date" id="metaDateStart" class="win-input">
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Completion Date</label>
-                    <input type="date" id="metaDateEnd" class="win-input">
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Project Completion %</label>
-                    <input type="number" id="metaPct" min="0" max="100" value="0" class="win-input">
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Doer</label>
-                    <input type="text" id="metaDoer" placeholder="e.g. FIELD TECH" class="win-input uppercase">
-                </div>
-            </div>
-
-            <div id="wizardSetupBox" class="bg-[#23272e] p-6 rounded-xl border border-[#3a404c] text-center max-w-md mx-auto my-6 hidden">
-                <h3 class="text-sm font-bold text-white mb-1">⚡ Dynamic Task Generation Wizard</h3>
-                <p class="text-xs text-slate-400 mb-4">How many tasks exist for this activity? (Max limit 20)</p>
-                <div class="flex gap-2 justify-center">
-                    <input type="number" id="wizardTargetCount" min="1" max="20" placeholder="e.g., 5" class="win-input text-center font-bold w-24">
-                    <button type="button" onclick="buildVerticalInputsForHorizontalStorage()" class="bg-blue-600 hover:bg-blue-500 font-bold px-4 text-xs rounded-md text-white transition-all">Generate Grid</button>
-                </div>
-            </div>
-
-            <div id="wizardGridDisplay" class="hidden">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Define Active Tasks:</h3>
-                <div class="bg-[#1e2227] rounded-xl border border-[#2a2e35] overflow-hidden text-xs">
-                    <div class="grid grid-cols-12 bg-[#17191c] py-2.5 px-4 font-bold text-slate-400 text-[10px] uppercase border-b border-[#2a2e35] tracking-wider">
-                        <div class="col-span-5">Task Title</div>
-                        <div class="col-span-3 text-center">Start Date</div>
-                        <div class="col-span-2 text-center">Duration (Days)</div>
-                        <div class="col-span-2 text-center">Date Completed</div>
+        <div id="pageViewDashboard" class="block">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Total Tracked Tasks</p>
+                        <h3 class="text-xl font-bold text-white mt-0.5" id="metricTotalTracked">0</h3>
                     </div>
-                    <div id="verticalTaskInputContainer" class="divide-y divide-[#2a2e35]">
-                        </div>
                 </div>
-
-                <div class="flex justify-end mt-4">
-                    <button type="button" onclick="compileAndPushHorizontalData()" class="bg-[#10b981] hover:bg-[#14d494] text-slate-950 font-bold px-6 py-2.5 text-xs uppercase tracking-wide rounded-lg shadow transition-all">✓ Save Single Row Layout</button>
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Budget Amount</p>
+                        <h3 class="text-xl font-bold text-white mt-0.5" id="metricBudget">₱0</h3>
+                    </div>
+                </div>
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Completion Rate</p>
+                        <h3 class="text-xl font-bold text-[#10b981] mt-0.5" id="metricCompRate">0%</h3>
+                    </div>
+                    <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
+                        <div id="barCompRate" class="bg-[#10b981] h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-[#22252a] p-3 rounded-xl border border-[#2d3139] flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-semibold tracking-wide uppercase text-slate-400">Overall Progress</p>
+                        <h3 class="text-xl font-bold text-blue-400 mt-0.5" id="metricPipeline">0%</h3>
+                    </div>
+                    <div class="w-full bg-[#2d3139] h-1 mt-2 rounded-full overflow-hidden">
+                        <div id="barPipeline" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-4">
+                <div class="lg:col-span-2 p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
+                    <div class="mb-2">
+                        <h4 class="text-xs font-bold text-slate-200">PROJECT TIMELINE STATUS</h4>
+                    </div>
+                    <div class="h-44 relative">
+                        <canvas id="quarterChart"></canvas>
+                    </div>
+                </div>
+                <div class="p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
+                    <div class="mb-2">
+                        <h4 class="text-xs font-bold text-slate-200">BUDGET SHARE BY FLEET</h4>
+                    </div>
+                    <div class="h-44 relative">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border border-[#2d3139] rounded-xl overflow-hidden bg-[#22252a] mt-4">
+                <div class="p-3 border-b border-[#2d3139] flex justify-between items-center bg-[#1c1f22]">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-200">MASTER PROJECTS REGISTRY</h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="syncIndicator" class="text-[10px] font-medium text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">Connecting...</span>
+                        <span id="tableRowCounter" class="text-[10px] font-bold text-slate-400 bg-[#2d3139] px-2 py-0.5 rounded">0 Items</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-[500px] overflow-y-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-[#1c1f22] z-10 shadow-sm">
+                            <tr class="border-b border-[#2d3139] text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="py-2 px-3 pl-4 w-32">Quarter</th>
+                                <th class="py-2 px-3 w-28">Asset No.</th>
+                                <th class="py-2 px-3">Planned Activity Action Details</th>
+                                <th class="py-2 px-3 w-40">Document / PO Ref</th>
+                                <th class="py-2 px-3 text-right w-36">Budget</th>
+                                <th class="py-2 px-3 text-center w-32">Status</th>
+                                <th class="py-2 px-3 text-center w-32">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTableBody" class="text-xs divide-y divide-[#2d3139]">
+                            <tr>
+                                <td colspan="7" class="py-8 text-center text-slate-400 font-medium">Loading live data fields from API...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
+
+        <div id="pageViewGantt" class="hidden my-4">
+            <div class="bg-[#22252a] p-4 rounded-xl border border-[#2d3139]">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-3 border-b border-[#2d3139] mb-4 gap-2">
+                    <div>
+                        <h2 class="text-sm font-bold text-white tracking-wide uppercase">2026 Fleet Maintenance Gantt Roadmap</h2>
+                        <p class="text-xs text-slate-400">Timeline view sorted chronologically by Asset Execution Schedule</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-slate-400">
+                        <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500/20 border border-amber-500/40 rounded"></span> Pending</div>
+                        <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-blue-500/20 border border-blue-500/40 rounded"></span> With Docs</div>
+                        <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-[#10b981]/20 border border-[#10b981]/40 rounded"></span> Done</div>
+                    </div>
+                </div>
+
+                <div class="border border-[#2d3139] rounded-lg overflow-hidden">
+                    <div class="grid grid-cols-12 bg-[#1c1f22] border-b border-[#2d3139] text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider py-2.5">
+                        <div class="col-span-3 text-left pl-4 border-r border-[#2d3139]">Equipment Log Target</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q1 (Jan-Mar)</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q2 (Apr-Jun)</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q3 (Jul-Sep)</div>
+                        <div class="col-span-2 border-r border-[#2d3139]">Q4 (Oct-Dec)</div>
+                        <div class="col-span-1">Status</div>
+                    </div>
+                    <div id="ganttChartRowsContainer" class="divide-y divide-[#2d3139] max-h-[580px] overflow-y-auto bg-[#1e2124]">
+                        <p class="text-xs text-center py-12 text-slate-400">Compiling dataset strings into timeline coordinates...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="pageViewJobCard" class="hidden my-4">
+            <div class="bg-[#22252a] p-5 rounded-xl border border-[#2d3139]">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-[#3d434e] pb-4 mb-4 gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-white tracking-wide uppercase" id="jcTitleAsset">Asset Details</h2>
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20" id="jcBadgeStatus">Pending</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1" id="jcSubtitleActivity">Planned Activity Action Details</p>
+                    </div>
+                    <button onclick="switchTab('dashboard')" class="px-3 py-1.5 text-xs font-semibold bg-[#2d3139] text-slate-300 hover:text-white rounded-lg transition-all">
+                        ← Back to Registry
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 bg-[#1c1f22] p-3 rounded-xl border border-[#2d3139]">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Scheduled Target</p>
+                        <p class="text-xs font-semibold text-slate-200 mt-0.5" id="jcSummaryQuarter">—</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">PO Reference</p>
+                        <p class="text-xs font-mono text-slate-200 mt-0.5" id="jcSummaryPO">—</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Allocated Budget</p>
+                        <p class="text-xs font-semibold text-slate-200 mt-0.5" id="jcSummaryBudget">₱0</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Job Card Progress</p>
+                        <p class="text-xs font-bold text-[#10b981] mt-0.5" id="jcSummaryProgress">35% Complete</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-xs font-bold uppercase text-slate-300 mb-3 tracking-wide flex items-center gap-1.5">
+                        <span class="inline-block w-1.5 h-3 bg-[#10b981] rounded-sm"></span>
+                        Operational Breakdown Execution Pipeline
+                    </h3>
+                    <div class="border border-[#343942] rounded-xl overflow-hidden bg-[#1c1f22] text-xs">
+                        <div class="grid grid-cols-12 bg-[#22252a] py-2 px-3 border-b border-[#343942] font-bold text-slate-400 text-[10px] uppercase tracking-wider">
+                            <div class="col-span-5">Milestone Task Description</div>
+                            <div class="col-span-2">Performer</div>
+                            <div class="col-span-2 text-center">Duration</div>
+                            <div class="col-span-2 text-center">Progress Gauge</div>
+                            <div class="col-span-1 text-center">Status</div>
+                        </div>
+
+                        <div id="jobCardSubTaskContainer" class="divide-y divide-[#2d3139]">
+                            </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold uppercase text-slate-300 mb-3 tracking-wide flex items-center gap-1.5">
+                        <span class="inline-block w-1.5 h-3 bg-red-500 rounded-sm"></span>
+                        RCA (Root Cause Analysis) Log For Timeline Delays
+                    </h3>
+                    <div class="border border-[#343942] rounded-xl overflow-hidden bg-[#1c1f22] p-3 text-xs">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-[10px] font-bold uppercase text-slate-500 border-b border-[#2d3139] pb-2">
+                                    <th class="w-10 pb-2">No.</th>
+                                    <th class="w-1/3 pb-2">Delay Description Exception Breakdown</th>
+                                    <th class="pb-2">Corrective Action Taken Log Details</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#2d3139] text-slate-300">
+                                <tr>
+                                    <td class="py-2.5 font-bold text-slate-500">1</td>
+                                    <td class="py-2.5 pr-4 text-slate-400 italic">No historical timeline delay logged for asset...</td>
+                                    <td class="py-2.5 text-slate-500">—</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 font-bold text-slate-500">2</td>
+                                    <td class="py-2.5 pr-4 text-slate-500">—</td>
+                                    <td class="py-2.5 text-slate-500">—</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // Paste your web app execution deployment string anchor down here
-        const DEPLOYED_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"; 
-        
-        let currentSelectedEquipment = "";
-        let currentSelectedProject = "";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwqxOei6dS5J4wqHr0TzYPgJEliHCCGsHd-tMC7j9ghXHRq4otM-mbbI-MV_j5HuvWq3g/exec"; 
+        const SHEET_PATH = "Sheet1"; 
 
-        // FIRES WHEN SELECTION ICON TRIGGER CLICK ACTION OCCURS
-        async function launchWizardWorkspace(equipment, projectTitle) {
-            currentSelectedEquipment = equipment;
-            currentSelectedProject = projectTitle;
+        let dataset = [];
+        let editingRowIds = new Set();
+        let quarterChartInstance = null;
+        let budgetChartInstance = null;
 
-            document.getElementById("activeEquipmentTitle").innerText = `EQUIPMENT: ${equipment}`;
-            document.getElementById("activeProjectSubtitle").innerText = projectTitle;
-
-            document.getElementById("dashboardView").className = "hidden";
-            document.getElementById("workspaceView").className = "block";
-
-            // Clear historical parameters completely
-            document.getElementById("wizardSetupBox").classList.add("hidden");
-            document.getElementById("wizardGridDisplay").classList.add("hidden");
-            document.getElementById("verticalTaskInputContainer").innerHTML = "";
+        // Structured Breakdown Pipeline mapped straight from the scanned template
+        const JOB_CARD_TEMPLATE = [
+            { phase: "EQUIPMENT PREPARATION", task: "Clean Area", performer: "IN-HOUSE", duration: "0.5 Days", progress: 100, status: "Completed" },
+            { phase: "EQUIPMENT PREPARATION", task: "Equipment Demob", performer: "IN-HOUSE", duration: "1.0 Days", progress: 0, status: "Pending" },
+            { phase: "EQUIPMENT PREPARATION", task: "Work Permits, PPE Required", performer: "IN-HOUSE", duration: "0.25 Days", progress: 0, status: "Pending" },
+            { phase: "EQUIPMENT PREPARATION", task: "High-Pressure Washing", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
+            { phase: "EQUIPMENT PREPARATION", task: "Tools & Support Setup", performer: "IN-HOUSE", duration: "0.25 Days", progress: 0, status: "Pending" },
             
-            document.getElementById("metaDateStart").value = "";
-            document.getElementById("metaDateEnd").value = "";
-            document.getElementById("metaPct").value = "0";
-            document.getElementById("metaDoer").value = "";
+            { phase: "DISCONNECTION & REMOVAL", task: "Remove Enclosure Panels", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
+            { phase: "DISCONNECTION & REMOVAL", task: "Disconnect Electrical Systems", performer: "FIELD TECH", duration: "0.75 Days", progress: 0, status: "Pending" },
+            { phase: "DISCONNECTION & REMOVAL", task: "Disconnect Hydraulic, Fuel Lines, Cooling", performer: "FIELD TECH", duration: "1.5 Days", progress: 0, status: "Pending" },
+            { phase: "DISCONNECTION & REMOVAL", task: "Unbolt Engine Mountings", performer: "FIELD TECH", duration: "0.5 Days", progress: 0, status: "Pending" },
+            { phase: "DISCONNECTION & REMOVAL", task: "Rigging & Lifting Engine Assy", performer: "CRANE CREW", duration: "1.0 Days", progress: 0, status: "Pending" },
+            
+            { phase: "INSTALLATION OF NEW COMPONENT", task: "Unboxing & Inspection of New Assy", performer: "QA TEAM", duration: "0.5 Days", progress: 0, status: "Pending" },
+            { phase: "INSTALLATION OF NEW COMPONENT", task: "Lifting & Precision Positioning", performer: "CRANE CREW", duration: "1.0 Days", progress: 0, status: "Pending" },
+            { phase: "INSTALLATION OF NEW COMPONENT", task: "Mounting Installation & Torque Lock", performer: "FIELD TECH", duration: "0.75 Days", progress: 0, status: "Pending" },
+            { phase: "INSTALLATION OF NEW COMPONENT", task: "System Reconnections (Hyd/Elec)", performer: "FIELD TECH", duration: "2.0 Days", progress: 0, status: "Pending" },
+            { phase: "INSTALLATION OF NEW COMPONENT", task: "Refill Fluids & Operational Lubes", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
+            { phase: "INSTALLATION OF NEW COMPONENT", task: "Dynamic Load Testing & Tuning", performer: "QA TEAM", duration: "1.0 Days", progress: 0, status: "Pending" },
+            
+            { phase: "POST-INSTALLATION WRAP", task: "Equipment Demobilization", performer: "IN-HOUSE", duration: "1.0 Days", progress: 0, status: "Pending" },
+            { phase: "POST-INSTALLATION WRAP", task: "Site Housekeeping & Clearance", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
+            { phase: "POST-INSTALLATION WRAP", task: "Closing Work Orders & Permits", performer: "SUPERVISOR", duration: "0.5 Days", progress: 0, status: "Pending" }
+        ];
 
-            updateStatusTag("Polling gantt_chart database...", "text-amber-400 border-amber-500/20 bg-amber-500/5");
+        Chart.register(ChartDataLabels);
 
-            try {
-                const res = await fetch(`${DEPLOYED_SCRIPT_URL}?action=readRow&equipment=${encodeURIComponent(equipment)}`);
-                const json = await res.json();
-                
-                if (json.found) {
-                    // Chart row row data found! Render layout directly on screen
-                    updateStatusTag("Active Data Loaded", "text-emerald-400 border-emerald-500/20 bg-emerald-500/5");
-                    renderExistingHorizontalChart(json.rowData);
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            loadDatabaseFromAPI();
+        });
+
+        function switchTab(targetTab) {
+            const tabDash = document.getElementById('pageViewDashboard');
+            const tabGantt = document.getElementById('pageViewGantt');
+            const tabJobCard = document.getElementById('pageViewJobCard');
+            
+            const btnDash = document.getElementById('btnTabDashboard');
+            const btnGantt = document.getElementById('btnTabGantt');
+            const btnJobCard = document.getElementById('btnTabJobCard');
+            const filterPanel = document.getElementById('globalFilterPanel');
+
+            // Hide everything first
+            tabDash.classList.replace('block', 'hidden');
+            tabGantt.classList.replace('block', 'hidden');
+            tabJobCard.classList.replace('block', 'hidden');
+            
+            btnDash.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200";
+            btnGantt.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200";
+            btnJobCard.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200 hidden";
+            
+            if (filterPanel) filterPanel.style.visibility = "hidden";
+
+            if (targetTab === 'dashboard') {
+                tabDash.classList.replace('hidden', 'block');
+                btnDash.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
+                if (filterPanel) filterPanel.style.visibility = "visible";
+            } else if (targetTab === 'gantt') {
+                tabGantt.classList.replace('hidden', 'block');
+                btnGantt.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
+                renderFleetGanttChart();
+            } else if (targetTab === 'jobcard') {
+                tabJobCard.classList.replace('hidden', 'block');
+                btnJobCard.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
+            }
+        }
+
+        // DRILL DOWN TRIGGER LINKING METHOD
+        function openAssetJobCard(id) {
+            const asset = dataset.find(item => item.id === id);
+            if (!asset) return;
+
+            // Populate summary texts
+            document.getElementById('jcTitleAsset').innerText = `Job Card Control Matrix: ${asset.equipment_no}`;
+            document.getElementById('jcSubtitleActivity').innerText = asset.activity;
+            document.getElementById('jcSummaryQuarter').innerText = asset.quarter.replace(' Quarter', '');
+            document.getElementById('jcSummaryPO').innerText = asset.po_reference || '—';
+            document.getElementById('jcSummaryBudget').innerText = asset.budget > 0 ? '₱' + asset.budget.toLocaleString() : '—';
+            
+            const badge = document.getElementById('jcBadgeStatus');
+            badge.innerText = asset.status;
+            if (asset.status.toLowerCase() === 'done') {
+                badge.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20";
+            } else if (asset.status.toLowerCase().includes('doc')) {
+                badge.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-blue-500/10 text-blue-400 border border-blue-500/20";
+            } else {
+                badge.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/10 text-amber-400 border border-amber-500/20";
+            }
+
+            // Dynamically simulate sub-task status rates matching overall operational status
+            const container = document.getElementById('jobCardSubTaskContainer');
+            container.innerHTML = '';
+            
+            let currentHeader = "";
+            let calculatedCompletionSum = 0;
+
+            JOB_CARD_TEMPLATE.forEach((taskItem, index) => {
+                let taskProgress = 0;
+                let taskStatus = "Pending";
+
+                if (asset.status.toLowerCase() === 'done') {
+                    taskProgress = 100;
+                    taskStatus = "Completed";
+                } else if (asset.status.toLowerCase().includes('doc')) {
+                    if (index < 9) { taskProgress = 100; taskStatus = "Completed"; }
+                    else if (index === 9 || index === 10) { taskProgress = 40; taskStatus = "Active"; }
                 } else {
-                    // Empty asset profiles call up the prompt selector wizard wizard configuration panel
-                    updateStatusTag("No Chart Recorded", "text-sky-400 border-sky-500/20 bg-sky-500/5");
-                    document.getElementById("wizardSetupBox").classList.remove("hidden");
+                    if (index === 0) { taskProgress = 100; taskStatus = "Completed"; }
+                    else if (index === 1) { taskProgress = 20; taskStatus = "Active"; }
                 }
-            } catch (err) {
-                // Testing sandbox fallback configuration parameter
-                document.getElementById("wizardSetupBox").classList.remove("hidden");
-            }
-        }
 
-        // GENERATES EXACT INPUT BOX FIELDS SPECIFIED BY USER ON SCREEN (CEILING CAP 20)
-        function buildVerticalInputsForHorizontalStorage() {
-            let numTasks = parseInt(document.getElementById("wizardTargetCount").value);
-            if (!numTasks || numTasks < 1) return alert("Please specify a baseline task quantity.");
-            
-            if (numTasks > 20) {
-                alert("Limiting workspace matrix block structures to 20 paths max.");
-                numTasks = 20;
-                document.getElementById("wizardTargetCount").value = 20;
-            }
+                calculatedCompletionSum += taskProgress;
 
-            const container = document.getElementById("verticalTaskInputContainer");
-            container.innerHTML = "";
+                if (taskItem.phase !== currentHeader) {
+                    currentHeader = taskItem.phase;
+                    const headerRow = document.createElement('div');
+                    headerRow.className = "bg-[#282c32]/40 text-[#10b981] text-[10px] font-bold px-3 py-1.5 tracking-wide border-t border-b border-[#2d3139]";
+                    headerRow.innerText = currentHeader;
+                    container.appendChild(headerRow);
+                }
 
-            for (let i = 1; i <= numTasks; i++) {
-                const rowDiv = document.createElement("div");
-                rowDiv.className = "single-task-form-block py-2 grid grid-cols-12 gap-2 items-center border-b border-[#2a2e35] px-4"; 
-                rowDiv.innerHTML = `
-                    <div class="col-span-5 flex items-center gap-2">
-                        <span class="text-[10px] bg-slate-700/50 px-1.5 py-0.5 rounded text-slate-400 font-mono">T${i}</span>
-                        <input type="text" placeholder="Task item description (or major section title)" class="win-input field-t-name">
+                let taskBadge = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                if (taskStatus === "Completed") taskBadge = "bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20";
+                if (taskStatus === "Active") taskBadge = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 py-2 px-3 items-center hover:bg-[#282c32]/20 border-b border-[#2d3139]/50 text-slate-300";
+                row.innerHTML = `
+                    <div class="col-span-5 pl-2 font-medium">${taskItem.task}</div>
+                    <div class="col-span-2 text-slate-400 font-mono text-[11px]">${taskItem.performer}</div>
+                    <div class="col-span-2 text-center text-slate-400">${taskItem.duration}</div>
+                    <div class="col-span-2 px-4">
+                        <div class="w-full bg-[#2d3139] h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-[#10b981] h-full" style="width: ${taskProgress}%"></div>
+                        </div>
                     </div>
-                    <div class="col-span-3"><input type="date" class="win-input text-center field-t-start"></div>
-                    <div class="col-span-2"><input type="number" step="0.5" placeholder="Days" class="win-input text-center field-t-duration"></div>
-                    <div class="col-span-2"><input type="date" class="win-input text-center field-t-complete"></div>
+                    <div class="col-span-1 text-center"><span class="px-1.5 py-0.5 border text-[9px] font-bold rounded ${taskBadge}">${taskStatus}</span></div>
                 `;
-                container.appendChild(rowDiv);
-            }
+                container.appendChild(row);
+            });
 
-            document.getElementById("wizardSetupBox").classList.add("hidden");
-            document.getElementById("wizardGridDisplay").classList.remove("hidden");
+            const overallPct = Math.round(calculatedCompletionSum / JOB_CARD_TEMPLATE.length);
+            document.getElementById('jcSummaryProgress').innerText = `${overallPct}% Complete`;
+
+            switchTab('jobcard');
         }
 
-        // SWEEPS EXISTING HORIZONTAL DATA AND PARSES IT TO INTERFACE GRID STRUCTURE
-        function renderExistingHorizontalChart(rowData) {
-            if(document.getElementById("metaDateStart")) document.getElementById("metaDateStart").value = rowData[2] || "";
-            if(document.getElementById("metaDateEnd")) document.getElementById("metaDateEnd").value = rowData[3] || "";
-            if(document.getElementById("metaPct")) document.getElementById("metaPct").value = Math.round(parseFloat(rowData[4] || 0) * 100);
-            if(document.getElementById("metaDoer")) document.getElementById("metaDoer").value = rowData[7] || "";
-
-            const container = document.getElementById("verticalTaskInputContainer");
-            container.innerHTML = "";
-
-            let index = 1;
-            // Scan horizontal data cells grouped by 4 elements starting at Column index cell 8
-            for (let i = 8; i < rowData.length; i += 4) {
-                if (!rowData[i] && !rowData[i+1]) break; 
+        async function loadDatabaseFromAPI() {
+            setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
+            try {
+                const response = await fetch(`${API_URL}?action=read&path=${encodeURIComponent(SHEET_PATH)}`);
+                const result = await response.json();
                 
-                const rowDiv = document.createElement("div");
-                rowDiv.className = "single-task-form-block py-2 grid grid-cols-12 gap-2 items-center border-b border-[#2a2e35] px-4";
-                rowDiv.innerHTML = `
-                    <div class="col-span-5 flex items-center gap-2">
-                        <span class="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-400 font-mono">T${index}</span>
-                        <input type="text" value="${rowData[i] || ''}" class="win-input field-t-name">
-                    </div>
-                    <div class="col-span-3"><input type="date" value="${rowData[i+1] ? rowData[i+1].split('T')[0] : ''}" class="win-input text-center field-t-start"></div>
-                    <div class="col-span-2"><input type="number" step="0.5" value="${rowData[i+2] || ''}" class="win-input text-center field-t-duration"></div>
-                    <div class="col-span-2"><input type="date" value="${rowData[i+3] ? rowData[i+3].split('T')[0] : ''}" class="win-input text-center field-t-complete"></div>
-                `;
-                container.appendChild(rowDiv);
-                index++;
-            }
+                const rawArray = result.data || result || [];
+                
+                let parsed = rawArray.map(item => {
+                    let target = {};
+                    Object.keys(item).forEach(key => {
+                        let normalizedKey = key.toLowerCase().trim().replace('.', '').replace(' ', '_');
+                        target[normalizedKey] = item[key];
+                    });
 
-            document.getElementById("wizardGridDisplay").classList.remove("hidden");
+                    let cleanedBudget = target.budget || target.budget_amount || 0;
+                    if (typeof cleanedBudget === 'string') {
+                        cleanedBudget = cleanedBudget.replace(/[^0-9.]/g, ''); 
+                    }
+                    
+                    return {
+                        id: parseInt(target.id) || 0,
+                        quarter: target.quarter || '',
+                        equipment_no: target.equipment_no || target.asset_no || '',
+                        activity: target.activity || target.planned_activity_action_details || '',
+                        po_reference: target.po_reference || target.document___po_ref || '—',
+                        budget: parseFloat(cleanedBudget) || 0,
+                        status: target.status || 'Pending'
+                    };
+                });
+                
+                parsed.sort((a, b) => a.id - b.id);
+                dataset = parsed;
+                
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
+            } catch (error) {
+                console.error("Database loading failed:", error);
+                setSyncStatus("API Connection Error", "text-red-400 bg-red-500/10");
+            }
         }
 
-        // BUNDLES FRONTEND ENTRIES BACK TO A REFLATTENED HORIZONTAL PATTERN FOR DATABASE STORAGE
-        async function compileAndPushHorizontalData() {
-            const horizontalRowDataArray = [
-                currentSelectedEquipment,                                        // equipment
-                currentSelectedProject,                                          // project title
-                document.getElementById("metaDateStart").value,                  // date start
-                document.getElementById("metaDateEnd").value,                    // completion date
-                parseFloat(document.getElementById("metaPct").value || 0) / 100, // project completion %
-                "", "",                                                          // blank space structure padding elements
-                document.getElementById("metaDoer").value                        // doer
-            ];
+        function setSyncStatus(text, classes) {
+            const ind = document.getElementById("syncIndicator");
+            if (ind) {
+                ind.innerText = text;
+                ind.className = `text-[10px] font-medium px-2 py-0.5 rounded ${classes}`;
+            }
+        }
 
-            const taskElements = document.querySelectorAll(".single-task-form-block");
-            taskElements.forEach(block => {
-                horizontalRowDataArray.push(
-                    block.querySelector(".field-t-name").value || "",
-                    block.querySelector(".field-t-start").value || "",
-                    block.querySelector(".field-t-duration").value || "",
-                    block.querySelector(".field-t-complete").value || ""
-                );
+        function initCharts() {
+            const canvasQ = document.getElementById('quarterChart');
+            const canvasB = document.getElementById('budgetChart');
+            
+            if (canvasQ) {
+                quarterChartInstance = new Chart(canvasQ.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                        datasets: [
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 65 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 65 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 65 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 4, color: '#94a3b8', font: { size: 10 } } },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { weight: 'bold', size: 11 },
+                                formatter: value => value > 0 ? value : ''
+                            }
+                        },
+                        scales: {
+                            x: { stacked: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
+                            y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                        }
+                    }
+                });
+            }
+
+            if (canvasB) {
+                budgetChartInstance = new Chart(canvasB.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
+                        datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444'], borderWidth: 0 }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { boxWidth: 8, padding: 4, color: '#94a3b8', font: { size: 10 } } },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: function(value, context) {
+                                    let sum = 0;
+                                    let dataArr = context.chart.data.datasets[0].data;
+                                    dataArr.map(data => { sum += data; });
+                                    if (sum === 0) return '';
+                                    return value > 0 ? (value * 100 / sum).toFixed(0) + "%" : '';
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+        }
+
+        function renderFleetGanttChart() {
+            const targetContainer = document.getElementById('ganttChartRowsContainer');
+            if (!targetContainer) return;
+            targetContainer.innerHTML = '';
+
+            if (dataset.length === 0) {
+                targetContainer.innerHTML = `<p class="text-xs text-center py-12 text-slate-500">No active assets registered</p>`;
+                return;
+            }
+
+            dataset.forEach(item => {
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-12 text-xs text-slate-300 py-3 items-center hover:bg-[#282c32]/30 transition-colors cursor-pointer";
+                row.onclick = () => openAssetJobCard(item.id);
+
+                let colorClasses = "bg-amber-500/20 border-amber-500 text-amber-400";
+                if (item.status.toLowerCase() === 'done') colorClasses = "bg-[#10b981]/20 border-[#10b981] text-[#10b981]";
+                if (item.status.toLowerCase() === 'with documents' || item.status.toLowerCase() === 'with docs') colorClasses = "bg-blue-500/20 border-blue-500 text-blue-400";
+
+                let q1Block = "", q2Block = "", q3Block = "", q4Block = "";
+                let shortText = item.activity.length > 40 ? item.activity.substring(0, 38) + '...' : item.activity;
+                
+                const timeVisualNode = `<div class="mx-2 p-1.5 rounded border text-[10px] font-bold truncate text-center ${colorClasses}">${shortText}</div>`;
+
+                let normQ = item.quarter.toLowerCase().trim();
+                if (normQ.includes('first') || normQ === 'q1') q1Block = timeVisualNode;
+                else if (normQ.includes('second') || normQ === 'q2') q2Block = timeVisualNode;
+                else if (normQ.includes('third') || normQ === 'q3') q3Block = timeVisualNode;
+                else if (normQ.includes('fourth') || normQ === 'q4') q4Block = timeVisualNode;
+
+                row.innerHTML = `
+                    <div class="col-span-3 pl-4 border-r border-[#2d3139]/50 flex flex-col justify-center">
+                        <span class="font-bold text-slate-100 flex items-center gap-1">🔍 ${item.equipment_no}</span>
+                        <span class="text-[10px] text-slate-400 tracking-tight max-w-[180px] truncate">${item.activity}</span>
+                    </div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q1Block}</div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q2Block}</div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q3Block}</div>
+                    <div class="col-span-2 border-r border-[#2d3139]/30 min-h-[36px] flex items-center">${q4Block}</div>
+                    <div class="col-span-1 text-center font-bold text-[10px] uppercase px-1 truncate">${item.status.replace('Documents','Docs')}</div>
+                `;
+                targetContainer.appendChild(row);
+            });
+        }
+
+        function applyFilters() {
+            const qFilter = document.getElementById('filterQuarter')?.value || 'All';
+            const prefixFilter = document.getElementById('filterPrefix')?.value || 'All';
+            const searchVal = document.getElementById('searchBar')?.value.toLowerCase() || '';
+
+            const filtered = dataset.filter(item => {
+                const matchQ = (qFilter === 'All' || item.quarter.toLowerCase().trim() === qFilter.toLowerCase().trim());
+                const matchP = (prefixFilter === 'All' || (item.equipment_no || '').toUpperCase().startsWith(prefixFilter));
+                
+                const poString = (item.po_reference || "").toLowerCase();
+                const activityString = (item.activity || "").toLowerCase();
+                const equipString = (item.equipment_no || "").toLowerCase();
+                
+                return matchQ && matchP && (!searchVal || activityString.includes(searchVal) || equipString.includes(searchVal) || poString.includes(searchVal));
             });
 
-            updateStatusTag("Pushing Row Matrix...", "text-amber-400 border-amber-500/20 bg-amber-500/5");
+            renderTable(filtered);
+            updateVisualGraphsAndMetrics(filtered); 
+        }
 
-            const params = new URLSearchParams({
-                action: "saveHorizontalRow",
-                equipment: currentSelectedEquipment,
-                dataData: JSON.stringify(horizontalRowDataArray)
+        function updateVisualGraphsAndMetrics(filteredData) {
+            const totalCount = filteredData.length;
+            const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
+            
+            const doneCount = filteredData.filter(i => i.status.toLowerCase() === 'done').length;
+            const docsCount = filteredData.filter(i => i.status.toLowerCase() === 'with documents' || i.status.toLowerCase() === 'with docs').length;
+            const pendingCount = filteredData.filter(i => i.status.toLowerCase() === 'pending').length;
+            
+            const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+            const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
+
+            const setNodeText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+            
+            setNodeText('metricTotalTracked', totalCount);
+            setNodeText('metricDoneStatus', doneCount);
+            setNodeText('metricWithDocs', docsCount);
+            setNodeText('metricPending', pendingCount);
+            if (document.getElementById('metricBudget')) document.getElementById('metricBudget').innerText = '₱' + totalBudget.toLocaleString();
+            setNodeText('metricCompRate', completionRate + '%');
+            if (document.getElementById('barCompRate')) document.getElementById('barCompRate').style.width = completionRate + '%';
+            setNodeText('metricPipeline', pipelineProgress + '%');
+            if (document.getElementById('barPipeline')) document.getElementById('barPipeline').style.width = pipelineProgress + '%';
+
+            const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
+            const segments = { 'first quarter': { done: 0, docs: 0, pending: 0 }, 'second quarter': { done: 0, docs: 0, pending: 0 }, 'third quarter': { done: 0, docs: 0, pending: 0 }, 'fourth quarter': { done: 0, docs: 0, pending: 0 } };
+            let bhBudget = 0, bdBudget = 0, crBudget = 0;
+
+            filteredData.forEach(item => {
+                let normQ = item.quarter.toLowerCase().trim();
+                let normStatus = item.status.toLowerCase().trim();
+                if (segments[normQ]) {
+                    if (normStatus === 'done') segments[normQ].done++;
+                    else if (normStatus === 'with documents' || normStatus === 'with docs') segments[normQ].docs++;
+                    else segments[normQ].pending++;
+                }
+                const prefix = (item.equipment_no || "").toUpperCase();
+                if (prefix.startsWith('BH')) bhBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('BD')) bdBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('CR')) crBudget += (parseFloat(item.budget) || 0);
             });
+
+            if (quarterChartInstance) {
+                quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q.toLowerCase()]?.done || 0);
+                quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q.toLowerCase()]?.docs || 0);
+                quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q.toLowerCase()]?.pending || 0);
+                quarterChartInstance.update();
+            }
+            if (budgetChartInstance) {
+                budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget];
+                budgetChartInstance.update();
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('projectTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (document.getElementById('tableRowCounter')) document.getElementById('tableRowCounter').innerText = `${data.length} Items`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-medium">No projects found matching query parameters</td></tr>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.id = `row-${item.id}`;
+                row.className = "hover:bg-[#282c32]/50 transition-colors border-b border-[#2d3139]";
+
+                if (editingRowIds.has(item.id)) {
+                    row.innerHTML = `
+                        <td class="p-1"><select class="row-quarter edit-input w-full rounded text-xs"><option value="First Quarter" ${item.quarter.includes('First')?'selected':''}>Q1</option><option value="Second Quarter" ${item.quarter.includes('Second')?'selected':''}>Q2</option><option value="Third Quarter" ${item.quarter.includes('Third')?'selected':''}>Q3</option><option value="Fourth Quarter" ${item.quarter.includes('Fourth')?'selected':''}>Q4</option></select></td>
+                        <td class="p-1"><input type="text" value="${item.equipment_no || ''}" class="row-equip edit-input w-full rounded font-bold uppercase text-xs"></td>
+                        <td class="p-1"><input type="text" value="${item.activity || ''}" class="row-activity edit-input w-full rounded text-xs"></td>
+                        <td class="p-1"><input type="text" value="${item.po_reference !== '—' ? item.po_reference : ''}" class="row-po edit-input w-full rounded text-xs"></td>
+                        <td class="p-1"><input type="number" value="${item.budget}" class="row-budget edit-input w-full text-right rounded text-xs"></td>
+                        <td class="p-1"><select class="row-status edit-input w-full rounded font-bold text-xs"><option value="Pending" ${item.status==='Pending'?'selected':''}>Pending</option><option value="With Documents" ${item.status==='With Documents'?'selected':''}>With Docs</option><option value="Done" ${item.status==='Done'?'selected':''}>Done</option></select></td>
+                        <td class="p-1 text-center">
+                            <button onclick="saveEditingRow(${item.id})" class="text-[#10b981] font-bold px-1 mr-1">✓</button>
+                            <button onclick="cancelEditingRow(${item.id})" class="text-gray-500 font-bold px-1">✕</button>
+                        </td>`;
+                } else {
+                    let badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    if (item.status.toLowerCase() === 'done') badgeColor = "bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20";
+                    if (item.status.toLowerCase().includes('doc')) badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+
+                    row.innerHTML = `
+                        <td class="py-1.5 px-3 pl-4 text-slate-400 font-medium">${item.quarter.replace(' Quarter', '')}</td>
+                        <td class="py-1.5 px-3 font-bold text-slate-200">${item.equipment_no}</td>
+                        <td class="py-1.5 px-3 text-slate-300 truncate max-w-xs" title="${item.activity}">${item.activity}</td>
+                        <td class="py-1.5 px-3 text-slate-400 font-mono text-[11px]">${item.po_reference || '—'}</td>
+                        <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
+                        <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
+                        <td class="py-1.5 px-3 text-center text-xs">
+                            <button onclick="openAssetJobCard(${item.id})" class="bg-[#2d3139] hover:bg-[#393f4a] text-slate-200 px-2 py-0.5 rounded mr-1.5 tracking-tight transition-all">📋 View Card</button>
+                            <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white" title="Edit Data">📝</button>
+                        </td>`;
+                }
+                tbody.appendChild(row);
+            });
+        }
+
+        function startEditingRow(id) { editingRowIds.add(id); applyFilters(); }
+        function cancelEditingRow(id) { editingRowIds.delete(id); applyFilters(); }
+        
+        async function saveEditingRow(id) {
+            const tr = document.getElementById(`row-${id}`);
+            if (!tr) return;
+
+            const quarter = tr.querySelector('.row-quarter').value;
+            const equipment_no = tr.querySelector('.row-equip').value;
+            const activity = tr.querySelector('.row-activity').value;
+            const po_reference = tr.querySelector('.row-po').value || '—';
+            const budget = parseFloat(tr.querySelector('.row-budget').value) || 0;
+            const status = tr.querySelector('.row-status').value;
+
+            setSyncStatus("Saving to Sheet...", "text-amber-400 bg-amber-500/10");
+
+            const queryParams = new URLSearchParams({ action: 'write', path: SHEET_PATH, id: id, quarter: quarter, equipment_no: equipment_no, activity: activity, po_reference: po_reference, budget: budget, status: status });
 
             try {
-                await fetch(`${DEPLOYED_SCRIPT_URL}?${params.toString()}`);
-                alert(`Gantt Chart saved horizontally for equipment track link: ${currentSelectedEquipment}`);
-                closeWorkspace();
-            } catch(e) {
-                alert("Row synced to spreadsheet template successfully.");
-                closeWorkspace();
+                const response = await fetch(`${API_URL}?${queryParams.toString()}`);
+                const resData = await response.json();
+                if (resData.error) { alert("Server Error: " + resData.error); return; }
+                
+                const targetItem = dataset.find(item => item.id === id);
+                if (targetItem) Object.assign(targetItem, { quarter, equipment_no, activity, po_reference, budget, status });
+
+                editingRowIds.delete(id);
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
+            } catch (err) {
+                console.error(err);
+                setSyncStatus("Sync error", "text-red-400 bg-red-500/10");
             }
         }
 
-        function closeWorkspace() {
-            document.getElementById("dashboardView").className = "block";
-            document.getElementById("workspaceView").className = "hidden";
-            updateStatusTag("System Ready", "text-[#10b981] border-[#10b981]/20 bg-[#10b981]/5");
-        }
+        async function addNewRow() {
+            setSyncStatus("Appending to Sheet...", "text-amber-400 bg-amber-500/10");
+            const nextId = dataset.length > 0 ? Math.max(...dataset.map(o => parseInt(o.id) || 0)) + 1 : 1;
+            
+            const newRowObj = { id: nextId, quarter: "First Quarter", equipment_no: "BH-NEW", activity: "Enter planned activity details...", po_reference: "—", budget: 0, status: "Pending" };
+            const queryParams = new URLSearchParams({ action: 'write', path: SHEET_PATH, id: newRowObj.id, quarter: newRowObj.quarter, equipment_no: newRowObj.equipment_no, activity: newRowObj.activity, po_reference: newRowObj.po_reference, budget: newRowObj.budget, status: newRowObj.status });
 
-        function updateStatusTag(msg, styleClasses) {
-            const el = document.getElementById("statusTag");
-            if(el) { el.innerText = msg; el.className = `text-xs px-3 py-1.5 rounded-lg font-medium border ${styleClasses}`; }
+            try {
+                const response = await fetch(`${API_URL}?${queryParams.toString()}`);
+                const resData = await response.json();
+                if (resData.error) { alert("Server Error: " + resData.error); return; }
+                
+                dataset.push(newRowObj);
+                editingRowIds.add(nextId); 
+                setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
+                applyFilters();
+            } catch (err) {
+                console.error(err);
+                setSyncStatus("Insertion error", "text-red-400 bg-red-500/10");
+            }
         }
     </script>
 </body>
