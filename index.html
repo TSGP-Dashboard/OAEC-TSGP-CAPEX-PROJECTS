@@ -6,6 +6,7 @@
     <title>2026 CAPEX Interactive Management Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #131517; color: #f8fafc; }
@@ -156,7 +157,6 @@
     </div>
 
     <script>
-        // Paste your deployed Google Apps Script URL here
         const API_URL = "https://script.google.com/macros/s/AKfycbwqxOei6dS5J4wqHr0TzYPgJEliHCCGsHd-tMC7j9ghXHRq4otM-mbbI-MV_j5HuvWq3g/exec"; 
         const SHEET_PATH = "Sheet1"; 
 
@@ -165,12 +165,14 @@
         let quarterChartInstance = null;
         let budgetChartInstance = null;
 
+        // Register the datalabels plugin globally to Chart.js
+        Chart.register(ChartDataLabels);
+
         window.addEventListener('DOMContentLoaded', () => {
             initCharts();
             loadDatabaseFromAPI();
         });
 
-        // READ: Fetch rows and dynamically normalize headers to lowercase
         async function loadDatabaseFromAPI() {
             setSyncStatus("Fetching...", "text-amber-400 bg-amber-500/10");
             try {
@@ -180,7 +182,6 @@
                 const rawArray = result.data || result || [];
                 
                 dataset = rawArray.map(item => {
-                    // Normalize spreadsheet capitalized keys to lowercase matching keys
                     let target = {};
                     Object.keys(item).forEach(key => {
                         let normalizedKey = key.toLowerCase().trim().replace('.', '').replace(' ', '_');
@@ -237,7 +238,17 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 4, color: '#94a3b8', font: { size: 10 } } } },
+                        plugins: { 
+                            legend: { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 4, color: '#94a3b8', font: { size: 10 } } },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { weight: 'bold', size: 11 },
+                                formatter: function(value) {
+                                    // Only show the label inside the bar if the count is greater than 0
+                                    return value > 0 ? value : '';
+                                }
+                            }
+                        },
                         scales: {
                             x: { stacked: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
                             y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
@@ -256,7 +267,22 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 4, color: '#94a3b8', font: { size: 10 } } } },
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { boxWidth: 8, padding: 4, color: '#94a3b8', font: { size: 10 } } },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: function(value, context) {
+                                    // Calculate total budget to display dynamic percentages
+                                    let sum = 0;
+                                    let dataArr = context.chart.data.datasets[0].data;
+                                    dataArr.map(data => { sum += data; });
+                                    if (sum === 0) return '';
+                                    let percentage = (value * 100 / sum).toFixed(0) + "%";
+                                    return value > 0 ? percentage : '';
+                                }
+                            }
+                        },
                         cutout: '70%'
                     }
                 });
