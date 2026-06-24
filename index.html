@@ -43,7 +43,7 @@
                 <select id="filterPrefix" onchange="applyFilters()" class="px-2 py-1.5 text-xs bg-[#22252a] border border-[#2d3139] text-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#10b981]/20 font-semibold cursor-pointer">
                     <option value="All">All Types</option>
                     <option value="BH">BH (Excavators)</option>
-                    <option value="BD (Dozers)">BD (Dozers)</option>
+                    <option value="BD">BD (Dozers)</option>
                     <option value="CR">CR (Cranes)</option>
                     <option value="RR">RR (Road Rollers)</option>
                     <option value="RG">RG (Road Graders)</option>
@@ -181,7 +181,7 @@
                 
                 const rawArray = result.data || result || [];
                 
-                dataset = rawArray.map(item => {
+                let parsed = rawArray.map(item => {
                     let target = {};
                     Object.keys(item).forEach(key => {
                         let normalizedKey = key.toLowerCase().trim().replace('.', '').replace(' ', '_');
@@ -203,6 +203,10 @@
                         status: target.status || 'Pending'
                     };
                 });
+                
+                // FIXED SORTING: Orders table rows matching your spreadsheet sequence (ID 1 -> 52)
+                parsed.sort((a, b) => a.id - b.id);
+                dataset = parsed;
                 
                 setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
                 applyFilters();
@@ -230,9 +234,9 @@
                     data: {
                         labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                         datasets: [
-                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 50 },
-                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 50 },
-                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 50 }
+                            { label: 'Done', data: [0, 0, 0, 0], backgroundColor: '#10b981', barThickness: 65 },
+                            { label: 'With Docs', data: [0, 0, 0, 0], backgroundColor: '#3b82f6', barThickness: 65 },
+                            { label: 'Pending', data: [0, 0, 0, 0], backgroundColor: '#f59e0b', barThickness: 65 }
                         ]
                     },
                     options: {
@@ -244,7 +248,6 @@
                                 color: '#ffffff',
                                 font: { weight: 'bold', size: 11 },
                                 formatter: function(value) {
-                                    // Only show the label inside the bar if the count is greater than 0
                                     return value > 0 ? value : '';
                                 }
                             }
@@ -273,7 +276,6 @@
                                 color: '#ffffff',
                                 font: { weight: 'bold', size: 10 },
                                 formatter: function(value, context) {
-                                    // Calculate total budget to display dynamic percentages
                                     let sum = 0;
                                     let dataArr = context.chart.data.datasets[0].data;
                                     dataArr.map(data => { sum += data; });
@@ -519,7 +521,7 @@
                     return;
                 }
                 
-                dataset.unshift(newRowObj);
+                dataset.push(newRowObj); // Appends new element chronologically to array layout
                 editingRowIds.add(nextId); 
                 setSyncStatus("Connected to Sheets API", "text-[#10b981] bg-[#10b981]/10");
                 applyFilters();
