@@ -337,7 +337,6 @@
                 return;
             }
 
-            // DYNAMIC BUTTON TOGGLE: Adjust copy and brand theme color when rows are built
             if (actionBtn) {
                 actionBtn.innerText = "Update Gantt Chart";
                 actionBtn.className = "px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all";
@@ -370,17 +369,15 @@
             });
         }
 
-        // CONTROL BUTTON CLICK ACTIONS
         function handleGanttAction() {
             const actionBtn = document.getElementById("ganttActionButton");
             if (actionBtn && actionBtn.innerText === "Create Gantt Chart") {
                 applyFilters(); 
             } else {
-                loadDatabaseFromAPI(); // Syncs freshly altered data straight from sheets backend
+                loadDatabaseFromAPI(); 
             }
         }
 
-        // AUTOMATIC CALCULATION FACTORY (No manual calculations requested)
         function updateVisualGraphsAndMetrics(filteredData) {
             const totalCount = filteredData.length;
             const totalBudget = filteredData.reduce((sum, item) => sum + (parseFloat(item.budget) || 0), 0);
@@ -389,7 +386,6 @@
             const docsCount = filteredData.filter(i => i.status.toLowerCase() === 'with documents' || i.status.toLowerCase() === 'with docs').length;
             const pendingCount = filteredData.filter(i => i.status.toLowerCase() === 'pending').length;
             
-            // Auto Math equations calculated live based on current visible rows
             const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
             const pipelineProgress = totalCount > 0 ? Math.round(((doneCount + docsCount) / totalCount) * 100) : 0;
 
@@ -526,6 +522,10 @@
             document.getElementById('winPO').value = '';
             document.getElementById('winBudget').value = '';
         }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModalWindow();
+        });
 
         function closeModalWindow() {
             document.getElementById('addProjectWindow').classList.add('hidden');
