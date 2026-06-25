@@ -201,7 +201,7 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-[#1c1f22] p-4 rounded-xl border border-[#2d3139] mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#1c1f22] p-4 rounded-xl border border-[#2d3139] mb-6">
                     <div>
                         <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Date Start</label>
                         <input type="date" id="metaDateStart" class="win-input">
@@ -209,10 +209,6 @@
                     <div>
                         <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Completion Date</label>
                         <input type="date" id="metaDateEnd" class="win-input">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Project Completion %</label>
-                        <input type="number" id="metaPct" min="0" max="100" value="0" class="win-input">
                     </div>
                     <div>
                         <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Doer</label>
@@ -238,8 +234,7 @@
                             <div class="col-span-2 text-center">Duration (Days)</div>
                             <div class="col-span-2 text-center">Date Completed</div>
                         </div>
-                        <div id="verticalTaskInputContainer" class="divide-y divide-[#2d3139]">
-                            </div>
+                        <div id="verticalTaskInputContainer" class="divide-y divide-[#2d3139]"></div>
                     </div>
 
                     <div class="flex justify-end mt-4">
@@ -375,7 +370,7 @@
                 if (filterPanel) filterPanel.style.visibility = "visible";
             } else if (targetTab === 'gantt') {
                 tabGantt.classList.replace('hidden', 'block');
-                btnGantt.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981];"
+                btnGantt.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
                 renderFleetGanttChart();
             } else if (targetTab === 'horizontalWizard') {
                 tabWizard.classList.replace('hidden', 'block');
@@ -387,7 +382,7 @@
         }
 
         // ENTRY INTERFACE CHECK MATRIX ENGINE
-        async function launchWizardWorkspace(equipment, projectTitle) {
+        async function launchWizardWorkspace(equipment, projectTitle, isUpdate = false) {
             currentSelectedEquipment = equipment;
             currentSelectedProject = projectTitle;
 
@@ -403,7 +398,6 @@
             document.getElementById("verticalTaskInputContainer").innerHTML = "";
             document.getElementById("metaDateStart").value = "";
             document.getElementById("metaDateEnd").value = "";
-            document.getElementById("metaPct").value = "0";
             document.getElementById("metaDoer").value = "";
 
             setSyncStatus("Checking gantt_chart sheet...", "text-amber-400 bg-amber-500/10");
@@ -460,10 +454,9 @@
 
         // SCANS EXISTING HORIZONTAL BUFFER ROW FIELDS AND GROUPS INTO FOURS
         function renderExistingHorizontalChart(rowData) {
-            // Columns C=2, D=3, E=4, H=7 mapping references
+            // Columns C=2, D=3, E=4 (removed), H=7 mapping references
             if(document.getElementById("metaDateStart")) document.getElementById("metaDateStart").value = rowData[2] || "";
             if(document.getElementById("metaDateEnd")) document.getElementById("metaDateEnd").value = rowData[3] || "";
-            if(document.getElementById("metaPct")) document.getElementById("metaPct").value = Math.round(parseFloat(rowData[4] || 0) * 100);
             if(document.getElementById("metaDoer")) document.getElementById("metaDoer").value = rowData[7] || "";
 
             const container = document.getElementById("verticalTaskInputContainer");
@@ -493,17 +486,29 @@
 
         // FLATTENS ARRAY AND SHIFTS IT THROUGH EXECUTION API 
         async function compileAndPushHorizontalData() {
+            // Automatically calculate the dynamic progress value based on completed task parameters
+            const taskElements = document.querySelectorAll(".single-task-form-block");
+            let totalTasksCount = taskElements.length;
+            let completedTasksCount = 0;
+
+            taskElements.forEach(block => {
+                if (block.querySelector(".field-t-complete").value) {
+                    completedTasksCount++;
+                }
+            });
+
+            const computedProgressPct = totalTasksCount > 0 ? (completedTasksCount / totalTasksCount) : 0;
+
             const horizontalRowDataArray = [
                 currentSelectedEquipment,                                        // equipment (Col A)
                 currentSelectedProject,                                          // project title (Col B)
                 document.getElementById("metaDateStart").value,                  // date start (Col C)
                 document.getElementById("metaDateEnd").value,                    // completion date (Col D)
-                parseFloat(document.getElementById("metaPct").value || 0) / 100, // project completion % (Col E)
+                computedProgressPct,                                             // Calculated project completion % (Col E)
                 "", "",                                                          // structural empty alignment columns (Col F & G)
                 document.getElementById("metaDoer").value                        // doer (Col H)
             ];
 
-            const taskElements = document.querySelectorAll(".single-task-form-block");
             taskElements.forEach(block => {
                 horizontalRowDataArray.push(
                     block.querySelector(".field-t-name").value || "",
@@ -659,7 +664,7 @@
             dataset.forEach(item => {
                 const row = document.createElement('div');
                 row.className = "grid grid-cols-12 text-xs text-slate-300 py-3 items-center hover:bg-[#282c32]/30 transition-colors cursor-pointer";
-                row.onclick = () => launchWizardWorkspace(item.equipment_no, item.activity);
+                row.onclick = () => launchWizardWorkspace(item.equipment_no, item.activity, true);
 
                 let colorClasses = "bg-amber-500/20 border-amber-500 text-amber-400";
                 if (item.status.toLowerCase() === 'done') colorClasses = "bg-[#10b981]/20 border-[#10b981] text-[#10b981]";
@@ -794,6 +799,7 @@
                     if (item.status.toLowerCase() === 'done') badgeColor = "bg-[#10b981]/10 text-[#10b981] border-[#10b981]/20";
                     if (item.status.toLowerCase().includes('doc')) badgeColor = "bg-blue-500/10 text-blue-400 border-blue-500/20";
 
+                    // Contextual check logic: dynamically determine button label depending on if an entry is being loaded from the sheet or new
                     row.innerHTML = `
                         <td class="py-1.5 px-3 pl-4 text-slate-400 font-medium">${item.quarter.replace(' Quarter', '')}</td>
                         <td class="py-1.5 px-3 font-bold text-slate-200">${item.equipment_no}</td>
@@ -802,7 +808,7 @@
                         <td class="py-1.5 px-3 text-right font-semibold text-slate-200">${item.budget > 0 ? '₱' + item.budget.toLocaleString() : '—'}</td>
                         <td class="py-1.5 px-3 text-center"><span class="px-2 py-0.5 border text-[10px] font-bold rounded-md ${badgeColor}">${item.status}</span></td>
                         <td class="py-1.5 px-3 text-center text-xs">
-                            <button onclick="launchWizardWorkspace('${item.equipment_no}', '${item.activity.replace(/'/g, "\\'")}')" class="bg-[#10b981] hover:bg-[#0fa472] text-slate-950 font-bold px-2 py-0.5 rounded mr-1.5 tracking-tight transition-all">📊 CREATE GANTT CHART</button>
+                            <button onclick="launchWizardWorkspace('${item.equipment_no}', '${item.activity.replace(/'/g, "\\'")}', true)" class="bg-[#10b981] hover:bg-[#0fa472] text-slate-950 font-bold px-2 py-0.5 rounded mr-1.5 tracking-tight transition-all uppercase">UPDATE GANTT CHART</button>
                             <button onclick="startEditingRow(${item.id})" class="text-slate-400 hover:text-white" title="Edit Data">📝</button>
                         </td>`;
                 }
