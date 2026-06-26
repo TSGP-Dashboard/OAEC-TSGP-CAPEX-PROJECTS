@@ -115,6 +115,7 @@
                     <option value="CR">CR (Cranes)</option>
                     <option value="RR">RR (Road Rollers)</option>
                     <option value="RG">RG (Road Graders)</option>
+                    <option value="DR">DR (Drill Rigs)</option>
                 </select>
                 <button id="btnGlobalAddNewProject" onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
                     <span>+</span> Add Project
@@ -755,8 +756,8 @@
                 budgetChartInstance = new Chart(canvasB.getContext('2d'), {
                     type: 'doughnut',
                     data: {
-                        labels: ['BH Excavators', 'BD Dozers', 'CR Cranes'],
-                        datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444'], borderWidth: 0 }]
+                        labels: ['Excavators', 'Dozers', 'Cranes', 'Graders', 'Rollers', 'Drill Rigs'],
+                        datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#FFF700', '#FF7900', '#8F00FF' ], borderWidth: 0 }]
                     },
                     options: {
                         responsive: true,
