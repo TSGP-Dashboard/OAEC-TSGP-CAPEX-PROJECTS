@@ -92,9 +92,6 @@
                 <button onclick="switchTab('horizontalWizard')" id="btnTabWizard" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200 hidden">
                     🛠️ Gantt Builder
                 </button>
-                <button onclick="switchTab('jobcard')" id="btnTabJobCard" class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200 hidden">
-                    📋 Asset Job Card View
-                </button>
             </div>
             
             <div id="globalFilterPanel" class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
@@ -113,8 +110,8 @@
                     <option value="BH">BH (Excavators)</option>
                     <option value="BD">BD (Dozers)</option>
                     <option value="CR">CR (Cranes)</option>
-                    <option value="RR">RR (Road Rollers)</option>
-                    <option value="RG">RG (Road Graders)</option>
+                    <option value="RG">RG (Graders)</option>
+                    <option value="RR">RR (Rollers)</option>
                     <option value="DR">DR (Drill Rigs)</option>
                 </select>
                 <button id="btnGlobalAddNewProject" onclick="addNewRow()" class="px-3 py-1.5 text-xs font-bold text-white bg-[#10b981] hover:bg-[#0fa472] rounded-lg shadow-sm transition-all flex items-center gap-1">
@@ -168,7 +165,7 @@
                 </div>
                 <div class="p-4 bg-[#22252a] border border-[#2d3139] rounded-xl">
                     <div class="mb-2">
-                        <h4 class="text-xs font-bold text-slate-200">BUDGET SHARE BY FLEET</h4>
+                        <h4 class="text-xs font-bold text-slate-200">BUDGET SHARE BY FLEET TYPE</h4>
                     </div>
                     <div class="h-44 relative">
                         <canvas id="budgetChart"></canvas>
@@ -296,59 +293,6 @@
             </div>
         </div>
 
-        <div id="pageViewJobCard" class="hidden my-4">
-            <div class="bg-[#22252a] p-5 rounded-xl border border-[#2d3139]">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-[#3d434e] pb-4 mb-4 gap-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-base font-bold text-white tracking-wide uppercase" id="jcTitleAsset">Asset Details</h2>
-                            <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20" id="jcBadgeStatus">Pending</span>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-1" id="jcSubtitleActivity">Planned Activity Action Details</p>
-                    </div>
-                    <button onclick="switchTab('dashboard')" class="px-3 py-1.5 text-xs font-semibold bg-[#2d3139] text-slate-300 hover:text-white rounded-lg transition-all">
-                        ← Back to Registry
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 bg-[#1c1f22] p-3 rounded-xl border border-[#2d3139]">
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Scheduled Target</p>
-                        <p class="text-xs font-semibold text-slate-200 mt-0.5" id="jcSummaryQuarter">—</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">PO Reference</p>
-                        <p class="text-xs font-mono text-slate-200 mt-0.5" id="jcSummaryPO">—</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Allocated Budget</p>
-                        <p class="text-xs font-semibold text-slate-200 mt-0.5" id="jcSummaryBudget">₱0</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Job Card Progress</p>
-                        <p class="text-xs font-bold text-[#10b981] mt-0.5" id="jcSummaryProgress">35% Complete</p>
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="text-xs font-bold uppercase text-slate-300 mb-3 tracking-wide flex items-center gap-1.5">
-                        <span class="inline-block w-1.5 h-3 bg-[#10b981] rounded-sm"></span>
-                        Operational Breakdown Execution Pipeline
-                    </h3>
-                    <div class="border border-[#343942] rounded-xl overflow-hidden bg-[#1c1f22] text-xs">
-                        <div class="grid grid-cols-12 bg-[#22252a] py-2 px-3 border-b border-[#343942] font-bold text-slate-400 text-[10px] uppercase tracking-wider">
-                            <div class="col-span-5">Milestone Task Description</div>
-                            <div class="col-span-2">Performer</div>
-                            <div class="col-span-2 text-center">Duration</div>
-                            <div class="col-span-2 text-center">Progress Gauge</div>
-                            <div class="col-span-1 text-center">Status</div>
-                        </div>
-                        <div id="jobCardSubTaskContainer" class="divide-y divide-[#2d3139]"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script>
@@ -359,32 +303,10 @@
         let editingRowIds = new Set();
         let quarterChartInstance = null;
         let budgetChartInstance = null;
-        let currentUserRole = "guest"; // Default fallback configuration variable
+        let currentUserRole = "guest"; 
 
         let currentSelectedEquipment = "";
         let currentSelectedProject = "";
-
-        const JOB_CARD_TEMPLATE = [
-            { phase: "EQUIPMENT PREPARATION", task: "Clean Area", performer: "IN-HOUSE", duration: "0.5 Days", progress: 100, status: "Completed" },
-            { phase: "EQUIPMENT PREPARATION", task: "Equipment Demob", performer: "IN-HOUSE", duration: "1.0 Days", progress: 0, status: "Pending" },
-            { phase: "EQUIPMENT PREPARATION", task: "Work Permits, PPE Required", performer: "IN-HOUSE", duration: "0.25 Days", progress: 0, status: "Pending" },
-            { phase: "EQUIPMENT PREPARATION", task: "High-Pressure Washing", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
-            { phase: "EQUIPMENT PREPARATION", task: "Tools & Support Setup", performer: "IN-HOUSE", duration: "0.25 Days", progress: 0, status: "Pending" },
-            { phase: "DISCONNECTION & REMOVAL", task: "Remove Enclosure Panels", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
-            { phase: "DISCONNECTION & REMOVAL", task: "Disconnect Electrical Systems", performer: "FIELD TECH", duration: "0.75 Days", progress: 0, status: "Pending" },
-            { phase: "DISCONNECTION & REMOVAL", task: "Disconnect Hydraulic, Fuel Lines, Cooling", performer: "FIELD TECH", duration: "1.5 Days", progress: 0, status: "Pending" },
-            { phase: "DISCONNECTION & REMOVAL", task: "Unbolt Engine Mountings", performer: "FIELD TECH", duration: "0.5 Days", progress: 0, status: "Pending" },
-            { phase: "DISCONNECTION & REMOVAL", task: "Rigging & Lifting Engine Assy", performer: "CRANE CREW", duration: "1.0 Days", progress: 0, status: "Pending" },
-            { phase: "INSTALLATION OF NEW COMPONENT", task: "Unboxing & Inspection of New Assy", performer: "QA TEAM", duration: "0.5 Days", progress: 0, status: "Pending" },
-            { phase: "INSTALLATION OF NEW COMPONENT", task: "Lifting & Precision Positioning", performer: "CRANE CREW", duration: "1.0 Days", progress: 0, status: "Pending" },
-            { phase: "INSTALLATION OF NEW COMPONENT", task: "Mounting Installation & Torque Lock", performer: "FIELD TECH", duration: "0.75 Days", progress: 0, status: "Pending" },
-            { phase: "INSTALLATION OF NEW COMPONENT", task: "System Reconnections (Hyd/Elec)", performer: "FIELD TECH", duration: "2.0 Days", progress: 0, status: "Pending" },
-            { phase: "INSTALLATION OF NEW COMPONENT", task: "Refill Fluids & Operational Lubes", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
-            { phase: "INSTALLATION OF NEW COMPONENT", task: "Dynamic Load Testing & Tuning", performer: "QA TEAM", duration: "1.0 Days", progress: 0, status: "Pending" },
-            { phase: "POST-INSTALLATION WRAP", task: "Equipment Demobilization", performer: "IN-HOUSE", duration: "1.0 Days", progress: 0, status: "Pending" },
-            { phase: "POST-INSTALLATION WRAP", task: "Site Housekeeping & Clearance", performer: "IN-HOUSE", duration: "0.5 Days", progress: 0, status: "Pending" },
-            { phase: "POST-INSTALLATION WRAP", task: "Closing Work Orders & Permits", performer: "SUPERVISOR", duration: "0.5 Days", progress: 0, status: "Pending" }
-        ];
 
         Chart.register(ChartDataLabels);
 
@@ -419,7 +341,6 @@
                 initCharts();
                 loadDatabaseFromAPI();
             } else {
-                // If token missing, drop security wall instantly
                 gateway.classList.remove("hidden");
                 appFrame.classList.add("hidden");
                 hideEditorLoginForm(); 
@@ -472,7 +393,6 @@
         }
 
         function switchTab(targetTab) {
-            // Enforce protection block on Guest configuration if attempting to open code wizard
             if (currentUserRole === "guest" && targetTab === "horizontalWizard") {
                 return; 
             }
@@ -480,23 +400,19 @@
             const tabDash = document.getElementById('pageViewDashboard');
             const tabGantt = document.getElementById('pageViewGantt');
             const tabWizard = document.getElementById('pageViewHorizontalWizard');
-            const tabJobCard = document.getElementById('pageViewJobCard');
             
             const btnDash = document.getElementById('btnTabDashboard');
             const btnGantt = document.getElementById('btnTabGantt');
             const btnWizard = document.getElementById('btnTabWizard');
-            const btnJobCard = document.getElementById('btnTabJobCard');
             const filterPanel = document.getElementById('globalFilterPanel');
 
             tabDash.classList.replace('block', 'hidden');
             tabGantt.classList.replace('block', 'hidden');
             tabWizard.classList.replace('block', 'hidden');
-            tabJobCard.classList.replace('block', 'hidden');
             
             btnDash.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200";
             btnGantt.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200";
             btnWizard.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200 hidden";
-            btnJobCard.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-slate-200 hidden";
             
             if (filterPanel) filterPanel.style.visibility = "hidden";
 
@@ -511,14 +427,10 @@
             } else if (targetTab === 'horizontalWizard') {
                 tabWizard.classList.replace('hidden', 'block');
                 btnWizard.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
-            } else if (targetTab === 'jobcard') {
-                tabJobCard.classList.replace('hidden', 'block');
-                btnJobCard.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-white bg-[#10b981]";
             }
         }
 
         async function launchWizardWorkspace(equipment, projectTitle, isUpdate = false) {
-            // Lock option down entirely if client profile matches view-only parameters
             if (currentUserRole === "guest") return; 
 
             currentSelectedEquipment = equipment;
@@ -753,37 +665,37 @@
             }
 
             if (canvasB) {
-    budgetChartInstance = new Chart(canvasB.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Excavators', 'Dozers', 'Cranes', 'Graders', 'Rollers', 'Drill Rigs'],
-            datasets: [{ 
-                data: [0, 0, 0, 0, 0, 0], // Reset placeholders for all 6 items
-                backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#fff700', '#ff7900', '#8f00ff'], 
-                borderWidth: 0 
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { position: 'bottom', labels: { boxWidth: 8, padding: 6, color: '#94a3b8', font: { size: 10 } } },
-                datalabels: {
-                    color: '#ffffff',
-                    font: { weight: 'bold', size: 10 },
-                    formatter: function(value, context) {
-                        let sum = 0;
-                        let dataArr = context.chart.data.datasets[0].data;
-                        dataArr.map(data => { sum += data; });
-                        if (sum === 0) return '';
-                        return value > 0 ? (value * 100 / sum).toFixed(0) + "%" : '';
+                budgetChartInstance = new Chart(canvasB.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Excavators', 'Dozers', 'Cranes', 'Graders', 'Rollers', 'Drill Rigs'],
+                        datasets: [{ 
+                            data: [0, 0, 0, 0, 0, 0], 
+                            backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#fff700', '#ff7900', '#8f00ff'], 
+                            borderWidth: 0 
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { boxWidth: 8, padding: 6, color: '#94a3b8', font: { size: 10 } } },
+                            datalabels: {
+                                color: '#ffffff',
+                                font: { weight: 'bold', size: 10 },
+                                formatter: function(value, context) {
+                                    let sum = 0;
+                                    let dataArr = context.chart.data.datasets[0].data;
+                                    dataArr.map(data => { sum += data; });
+                                    if (sum === 0) return '';
+                                    return value > 0 ? (value * 100 / sum).toFixed(0) + "%" : '';
+                                }
+                            }
+                        },
+                        cutout: '70%'
                     }
-                }
-            },
-            cutout: '70%'
-        }
-    });
-}
+                });
+            }
         }
 
         function renderFleetGanttChart() {
@@ -800,7 +712,6 @@
                 const row = document.createElement('div');
                 row.id = `gantt-row-${item.id}`;
                 
-                // Add specific interactive classes only if Editor clearance levels are valid
                 if (currentUserRole === "editor") {
                     row.className = "grid grid-cols-12 text-xs text-slate-300 py-3 items-center hover:bg-[#282c32]/30 transition-colors cursor-pointer";
                     row.onclick = () => launchWizardWorkspace(item.equipment_no, item.activity, true);
@@ -881,54 +792,52 @@
 
             const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
             const segments = { 'first quarter': { done: 0, docs: 0, pending: 0 }, 'second quarter': { done: 0, docs: 0, pending: 0 }, 'third quarter': { done: 0, docs: 0, pending: 0 }, 'fourth quarter': { done: 0, docs: 0, pending: 0 } };
+            
+            // Initialize budget buckets for all 6 equipment variants
             let bhBudget = 0, bdBudget = 0, crBudget = 0;
-let rgBudget = 0, rrBudget = 0, drBudget = 0;
+            let rgBudget = 0, rrBudget = 0, drBudget = 0;
 
-filteredData.forEach(item => {
-    let normQ = item.quarter.toLowerCase().trim();
-    let normStatus = item.status.toLowerCase().trim();
-    if (segments[normQ]) {
-        if (normStatus === 'done') segments[normQ].done++;
-        else if (normStatus === 'with documents' || normStatus === 'with docs') segments[normQ].docs++;
-        else segments[normQ].pending++;
-    }
-    
-    // Prefix sorting matching code conditions
-    const prefix = (item.equipment_no || "").toUpperCase();
-    if (prefix.startsWith('BH')) bhBudget += (parseFloat(item.budget) || 0);
-    else if (prefix.startsWith('BD')) bdBudget += (parseFloat(item.budget) || 0);
-    else if (prefix.startsWith('CR')) crBudget += (parseFloat(item.budget) || 0);
-    else if (prefix.startsWith('RG')) rgBudget += (parseFloat(item.budget) || 0); // Graders
-    else if (prefix.startsWith('RR')) rrBudget += (parseFloat(item.budget) || 0); // Rollers
-    else if (prefix.startsWith('DR')) drBudget += (parseFloat(item.budget) || 0); // Drill Rigs
-});
+            filteredData.forEach(item => {
+                let normQ = item.quarter.toLowerCase().trim();
+                let normStatus = item.status.toLowerCase().trim();
+                if (segments[normQ]) {
+                    if (normStatus === 'done') segments[normQ].done++;
+                    else if (normStatus === 'with documents' || normStatus === 'with docs') segments[normQ].docs++;
+                    else segments[normQ].pending++;
+                }
+                const prefix = (item.equipment_no || "").toUpperCase();
+                if (prefix.startsWith('BH')) bhBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('BD')) bdBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('CR')) crBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('RG')) rgBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('RR')) rrBudget += (parseFloat(item.budget) || 0);
+                else if (prefix.startsWith('DR')) drBudget += (parseFloat(item.budget) || 0);
+            });
 
-if (quarterChartInstance) {
-    quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q.toLowerCase()]?.done || 0);
-    quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q.toLowerCase()]?.docs || 0);
-    quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q.toLowerCase()]?.pending || 0);
-    quarterChartInstance.update();
-}
+            if (quarterChartInstance) {
+                quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q.toLowerCase()]?.done || 0);
+                quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q.toLowerCase()]?.docs || 0);
+                quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q.toLowerCase()]?.pending || 0);
+                quarterChartInstance.update();
+            }
+            if (budgetChartInstance) {
+                budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget, rgBudget, rrBudget, drBudget];
+                budgetChartInstance.update();
+            }
+        }
 
-// Push all 6 parsed metrics into your updated layout dataset array
-if (budgetChartInstance) {
-    budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget, rgBudget, rrBudget, drBudget];
-    budgetChartInstance.update();
-}
         function renderTable(data) {
             const tbody = document.getElementById('projectTableBody');
             if (!tbody) return;
             tbody.innerHTML = '';
             if (document.getElementById('tableRowCounter')) document.getElementById('tableRowCounter').innerText = `${data.length} Items`;
 
-            // Adjust actions layout headers visually
             const actionsHeader = document.getElementById("tableActionsHeaderCell");
             if (actionsHeader) {
                 if (currentUserRole === "editor") {
                     actionsHeader.innerText = "Actions";
                     actionsHeader.classList.remove("hidden");
                 } else {
-                    // Strip header title cell out completely for guests
                     actionsHeader.classList.add("hidden");
                 }
             }
