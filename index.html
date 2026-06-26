@@ -753,33 +753,37 @@
             }
 
             if (canvasB) {
-                budgetChartInstance = new Chart(canvasB.getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Excavators', 'Dozers', 'Cranes', 'Graders', 'Rollers', 'Drill Rigs'],
-                        datasets: [{ data: [0, 0, 0], backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#fff700', '#ff7900', '#8f00ff' ], borderWidth: 0 }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { 
-                            legend: position => 'bottom', labels: { boxWidth: 8, padding: 4, color: '#94a3b8', font: { size: 10 } },
-                            datalabels: {
-                                color: '#ffffff',
-                                font: { weight: 'bold', size: 10 },
-                                formatter: function(value, context) {
-                                    let sum = 0;
-                                    let dataArr = context.chart.data.datasets[0].data;
-                                    dataArr.map(data => { sum += data; });
-                                    if (sum === 0) return '';
-                                    return value > 0 ? (value * 100 / sum).toFixed(0) + "%" : '';
-                                }
-                            }
-                        },
-                        cutout: '70%'
+    budgetChartInstance = new Chart(canvasB.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Excavators', 'Dozers', 'Cranes', 'Graders', 'Rollers', 'Drill Rigs'],
+            datasets: [{ 
+                data: [0, 0, 0, 0, 0, 0], // Reset placeholders for all 6 items
+                backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#fff700', '#ff7900', '#8f00ff'], 
+                borderWidth: 0 
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 8, padding: 6, color: '#94a3b8', font: { size: 10 } } },
+                datalabels: {
+                    color: '#ffffff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: function(value, context) {
+                        let sum = 0;
+                        let dataArr = context.chart.data.datasets[0].data;
+                        dataArr.map(data => { sum += data; });
+                        if (sum === 0) return '';
+                        return value > 0 ? (value * 100 / sum).toFixed(0) + "%" : '';
                     }
-                });
-            }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+}
         }
 
         function renderFleetGanttChart() {
@@ -878,33 +882,39 @@
             const qLabels = ['First Quarter', 'Second Quarter', 'Third Quarter', 'Fourth Quarter'];
             const segments = { 'first quarter': { done: 0, docs: 0, pending: 0 }, 'second quarter': { done: 0, docs: 0, pending: 0 }, 'third quarter': { done: 0, docs: 0, pending: 0 }, 'fourth quarter': { done: 0, docs: 0, pending: 0 } };
             let bhBudget = 0, bdBudget = 0, crBudget = 0;
+let rgBudget = 0, rrBudget = 0, drBudget = 0;
 
-            filteredData.forEach(item => {
-                let normQ = item.quarter.toLowerCase().trim();
-                let normStatus = item.status.toLowerCase().trim();
-                if (segments[normQ]) {
-                    if (normStatus === 'done') segments[normQ].done++;
-                    else if (normStatus === 'with documents' || normStatus === 'with docs') segments[normQ].docs++;
-                    else segments[normQ].pending++;
-                }
-                const prefix = (item.equipment_no || "").toUpperCase();
-                if (prefix.startsWith('BH')) bhBudget += (parseFloat(item.budget) || 0);
-                else if (prefix.startsWith('BD')) bdBudget += (parseFloat(item.budget) || 0);
-                else if (prefix.startsWith('CR')) crBudget += (parseFloat(item.budget) || 0);
-            });
+filteredData.forEach(item => {
+    let normQ = item.quarter.toLowerCase().trim();
+    let normStatus = item.status.toLowerCase().trim();
+    if (segments[normQ]) {
+        if (normStatus === 'done') segments[normQ].done++;
+        else if (normStatus === 'with documents' || normStatus === 'with docs') segments[normQ].docs++;
+        else segments[normQ].pending++;
+    }
+    
+    // Prefix sorting matching code conditions
+    const prefix = (item.equipment_no || "").toUpperCase();
+    if (prefix.startsWith('BH')) bhBudget += (parseFloat(item.budget) || 0);
+    else if (prefix.startsWith('BD')) bdBudget += (parseFloat(item.budget) || 0);
+    else if (prefix.startsWith('CR')) crBudget += (parseFloat(item.budget) || 0);
+    else if (prefix.startsWith('RG')) rgBudget += (parseFloat(item.budget) || 0); // Graders
+    else if (prefix.startsWith('RR')) rrBudget += (parseFloat(item.budget) || 0); // Rollers
+    else if (prefix.startsWith('DR')) drBudget += (parseFloat(item.budget) || 0); // Drill Rigs
+});
 
-            if (quarterChartInstance) {
-                quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q.toLowerCase()]?.done || 0);
-                quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q.toLowerCase()]?.docs || 0);
-                quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q.toLowerCase()]?.pending || 0);
-                quarterChartInstance.update();
-            }
-            if (budgetChartInstance) {
-                budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget];
-                budgetChartInstance.update();
-            }
-        }
+if (quarterChartInstance) {
+    quarterChartInstance.data.datasets[0].data = qLabels.map(q => segments[q.toLowerCase()]?.done || 0);
+    quarterChartInstance.data.datasets[1].data = qLabels.map(q => segments[q.toLowerCase()]?.docs || 0);
+    quarterChartInstance.data.datasets[2].data = qLabels.map(q => segments[q.toLowerCase()]?.pending || 0);
+    quarterChartInstance.update();
+}
 
+// Push all 6 parsed metrics into your updated layout dataset array
+if (budgetChartInstance) {
+    budgetChartInstance.data.datasets[0].data = [bhBudget, bdBudget, crBudget, rgBudget, rrBudget, drBudget];
+    budgetChartInstance.update();
+}
         function renderTable(data) {
             const tbody = document.getElementById('projectTableBody');
             if (!tbody) return;
